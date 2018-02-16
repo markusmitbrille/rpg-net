@@ -1,16 +1,8 @@
-﻿using Autrage.LEX.NET;
-using Autrage.LEX.NET.Serialization;
+﻿using Autrage.LEX.NET.Serialization;
 using System;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>
-/// <para>Represents a composite stat that is calculated as a sum of bases, times a product of multipliers, plus a sum
-/// of addends. Other stats constitute bases, multipliers and addends, making complex interrelated stats possible.</para>
-/// <para><see cref="Value"/> is bounded by <see cref="Min"/> and <see cref="Max"/>, if they are set and valid, if not
-/// it is equal to <see cref="Actual"/>.</para>
-/// </summary>
 [Serializable]
 [DataContract]
 public class ComplexStat : Stat
@@ -36,146 +28,13 @@ public class ComplexStat : Stat
     private float defaultMax = 0f;
 
     [DataMember]
-    private List<Stat> bases = new List<Stat>();
+    public Stat Basis { get; set; }
 
     [DataMember]
-    private List<Stat> multipliers = new List<Stat>();
+    public Stat Multiplier { get; set; }
 
     [DataMember]
-    private List<Stat> addends = new List<Stat>();
-
-    private float? basis = null;
-
-    private float? multiplier = null;
-
-    private float? addend = null;
-
-    private float? value = null;
-
-    private float? actual = null;
-
-    public float Basis
-    {
-        get
-        {
-            if (!basis.HasValue)
-            {
-                basis = 0f;
-
-                // Build new list of stats that will contain at most one float stat
-                List<Stat> stats = new List<Stat>();
-                float floatStat = 0f;
-
-                foreach (Stat stat in bases)
-                {
-                    basis += stat.Value;
-
-                    if (stat is SimpleStat)
-                    {
-                        // Compound float stats
-                        floatStat += stat.Value;
-                    }
-                    else
-                    {
-                        // Leave other stats alone
-                        stats.Add(stat);
-                    }
-                }
-
-                if (floatStat != 0f)
-                {
-                    // Actually add float stat
-                    stats.Add(new SimpleStat(floatStat));
-                }
-
-                bases = stats;
-            }
-
-            return basis.Value;
-        }
-    }
-
-    public float Multiplier
-    {
-        get
-        {
-            if (!multiplier.HasValue)
-            {
-                multiplier = 1f;
-
-                // Build new list of stats that will contain at most one float stat
-                List<Stat> stats = new List<Stat>();
-                float floatStat = 1f;
-
-                foreach (Stat stat in multipliers)
-                {
-                    multiplier *= stat.Value;
-
-                    if (stat is SimpleStat)
-                    {
-                        // Compound float stats
-                        floatStat *= stat.Value;
-                    }
-                    else
-                    {
-                        // Leave other stats alone
-                        stats.Add(stat);
-                    }
-                }
-
-                if (floatStat != 1f)
-                {
-                    // Actually add float stat
-                    stats.Add(new SimpleStat(floatStat));
-                }
-
-                multipliers = stats;
-            }
-
-            return multiplier.Value;
-        }
-    }
-
-    public float Addend
-    {
-        get
-        {
-            if (!addend.HasValue)
-            {
-                addend = 0f;
-
-                // Build new list of stats that will contain at most one float stat
-                List<Stat> stats = new List<Stat>();
-                float floatStat = 0f;
-
-                foreach (Stat stat in addends)
-                {
-                    addend += stat.Value;
-
-                    if (stat is SimpleStat)
-                    {
-                        // Compound float stats
-                        floatStat += stat.Value;
-                    }
-                    else
-                    {
-                        // Leave other stats alone
-                        stats.Add(stat);
-                    }
-                }
-
-                if (floatStat != 0f)
-                {
-                    // Actually add float stat
-                    stats.Add(new SimpleStat(floatStat));
-                }
-
-                addends = stats;
-            }
-
-            return addend.Value;
-        }
-    }
+    public Stat Addend { get; set; }
 
     [DataMember]
     public Stat Min { get; set; }
@@ -183,243 +42,26 @@ public class ComplexStat : Stat
     [DataMember]
     public Stat Max { get; set; }
 
-    public float? MinValue { get { return Min?.Value; } }
+    public override float Value => Min == null || Max == null || Min > Max ? Actual : Mathf.Clamp(Actual, Min, Max);
+    public float Actual => BaseVal * MultVal + AddVal;
 
-    public float? MaxValue { get { return Max?.Value; } }
+    public float DefaultValue => defaultMin > defaultMax ? DefaultActual : Mathf.Clamp(DefaultActual, defaultMin, defaultMax);
+    public float DefaultActual => defaultBasis * defaultMultiplier + defaultAddend;
 
-    public override float Value
-    {
-        get
-        {
-            if (!value.HasValue)
-            {
-                if (Min == null && Max == null || Min?.Value > Max?.Value)
-                {
-                    // No bounds set or invalid
-                    value = Actual;
-                }
-                else
-                {
-                    if (Min != null)
-                    {
-                        value = Mathf.Max(Min.Value, Actual);
-                    }
-                    if (Max != null)
-                    {
-                        value = Mathf.Min(Min.Value, Actual);
-                    }
-                }
-            }
+    public float Improvement => Value / DefaultValue;
+    public float ActualImprovement => Actual / DefaultActual;
 
-            return value.Value;
-        }
-    }
+    private float BaseVal => Basis ?? 0f;
+    private float MultVal => Multiplier ?? 1f;
+    private float AddVal => Addend ?? 0f;
 
-    public float Actual
-    {
-        get
-        {
-            if (!actual.HasValue)
-            {
-                actual = Basis * Multiplier + Addend;
-            }
-
-            return actual.Value;
-        }
-    }
-
-    public float DefaultValue { get { return defaultMin > defaultMax ? DefaultActual : Mathf.Clamp(DefaultActual, defaultMin, defaultMax); } }
-
-    public float DefaultActual { get { return defaultBasis * defaultMultiplier + defaultAddend; } }
-
-    public float Improvement { get { return Value / DefaultValue; } }
-
-    public float ActualImprovement { get { return Actual / DefaultActual; } }
-
-    /// <summary>
-    /// Constructs a <see cref="ComplexStat"/> from the default values set and serialized by unity.
-    /// </summary>
     public ComplexStat()
     {
-        AddBasis(defaultBasis);
-        AddMultiplier(defaultMultiplier);
-        AddAddend(defaultAddend);
-
-        Min = new SimpleStat(defaultMin);
-        Max = new SimpleStat(defaultMax);
-    }
-
-    /// <summary>
-    /// Adds <paramref name="num"/> to <see cref="bases"/> of <paramref name="stat"/>.
-    /// </summary>
-    public static ComplexStat operator +(ComplexStat stat, float num)
-    {
-        stat.AddBasis(num);
-        return stat;
-    }
-
-    /// <summary>
-    /// Adds <paramref name="num"/> to <see cref="bases"/> of <paramref name="stat"/>.
-    /// </summary>
-    public static ComplexStat operator +(float num, ComplexStat stat)
-    {
-        stat.AddBasis(num);
-        return stat;
-    }
-
-    /// <summary>
-    /// Adds negative of <paramref name="num"/> to <see cref="bases"/> of <paramref name="stat"/>.
-    /// </summary>
-    public static ComplexStat operator -(ComplexStat stat, float num)
-    {
-        stat.AddBasis(-num);
-        return stat;
-    }
-
-    /// <summary>
-    /// Adds <paramref name="num"/> to <see cref="multipliers"/> of <paramref name="stat"/>.
-    /// </summary>
-    public static ComplexStat operator *(ComplexStat stat, float num)
-    {
-        stat.AddMultiplier(num);
-        return stat;
-    }
-
-    /// <summary>
-    /// Adds <paramref name="num"/> to <see cref="multipliers"/> of <paramref name="stat"/>.
-    /// </summary>
-    public static ComplexStat operator *(float num, ComplexStat stat)
-    {
-        stat.AddMultiplier(num);
-        return stat;
-    }
-
-    /// <summary>
-    /// Adds inverse <paramref name="num"/> to <see cref="multipliers"/> of <paramref name="stat"/>.
-    /// </summary>
-    public static ComplexStat operator /(ComplexStat stat, float num)
-    {
-        stat.AddMultiplier(1f / num);
-        return stat;
-    }
-
-    public void AddBasis(Stat basis)
-    {
-        basis.AssertNotNull(nameof(basis));
-
-        bases.Add(basis);
-
-        // Refresh modified property and dependencies
-        this.basis = null;
-        actual = null;
-        value = null;
-    }
-
-    public void AddBasis(float basis)
-    {
-        AddBasis(new SimpleStat(basis));
-    }
-
-    public bool RemoveBasis(Stat basis)
-    {
-        basis.AssertNotNull(nameof(basis));
-
-        bool removed = bases.Remove(basis);
-        if (removed)
-        {
-            // Refresh modified property and dependencies
-            this.basis = null;
-            actual = null;
-            value = null;
-        }
-
-        return removed;
-    }
-
-    public void RemoveBasis(float basis)
-    {
-        RemoveBasis(new SimpleStat(basis));
-    }
-
-    public void AddMultiplier(Stat multiplier)
-    {
-        multiplier.AssertNotNull(nameof(multiplier));
-
-        if (multiplier is SimpleStat && multiplier.Value == 0f)
-        {
-            return;
-        }
-
-        multipliers.Add(multiplier);
-
-        // Refresh modified property and dependencies
-        this.multiplier = null;
-        actual = null;
-        value = null;
-    }
-
-    public void AddMultiplier(float basis)
-    {
-        AddMultiplier(new SimpleStat(basis));
-    }
-
-    public bool RemoveMultiplier(Stat multiplier)
-    {
-        multiplier.AssertNotNull(nameof(multiplier));
-
-        bool removed = multipliers.Remove(multiplier);
-        if (removed)
-        {
-            // Refresh modified property and dependencies
-            this.multiplier = null;
-            actual = null;
-            value = null;
-        }
-
-        return removed;
-    }
-
-    public void RemoveMultiplier(float basis)
-    {
-        RemoveMultiplier(new SimpleStat(basis));
-    }
-
-    public void AddAddend(Stat addend)
-    {
-        addend.AssertNotNull(nameof(addend));
-
-        addends.Add(addend);
-
-        // Refresh modified property and dependencies
-        this.addend = null;
-        actual = null;
-        value = null;
-    }
-
-    public void AddAddend(float basis)
-    {
-        AddAddend(new SimpleStat(basis));
-    }
-
-    public bool RemoveAddend(Stat addend)
-    {
-        addend.AssertNotNull(nameof(addend));
-
-        bool removed = addends.Remove(addend);
-        if (removed)
-        {
-            // Refresh modified property and dependencies
-            this.addend = null;
-            actual = null;
-            value = null;
-        }
-
-        return removed;
-    }
-
-    public void RemoveAddend(float basis)
-    {
-        RemoveAddend(new SimpleStat(basis));
+        Basis = defaultBasis;
+        Multiplier = defaultMultiplier;
+        Addend = defaultAddend;
+        Min = defaultMin;
+        Max = defaultMax;
     }
 
     [CustomPropertyDrawer(typeof(ComplexStat))]

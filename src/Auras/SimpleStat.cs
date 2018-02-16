@@ -1,15 +1,12 @@
 ﻿using Autrage.LEX.NET.Serialization;
 using UnityEngine;
 
-/// <summary>
-/// Encapsulates a singular <see cref="float"/> value.
-/// </summary>
 [DataContract]
 public class SimpleStat : Stat
 {
     [SerializeField]
     [DataMember]
-    private float value = 0f;
+    private float value;
 
     public override float Value { get { return value; } }
 
