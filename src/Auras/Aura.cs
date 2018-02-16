@@ -139,6 +139,13 @@ public class Aura : MonoBehaviour
             return;
         }
 
+        // Conclude if no owner was found to avoid orphaned auras
+        if (owner == null)
+        {
+            Conclude();
+            return;
+        }
+
         // Pre-application stage
         Effect.StageResults preApplicationResults = Effect.StageResults.None;
         foreach (Effect effect in Effects)
@@ -178,6 +185,10 @@ public class Aura : MonoBehaviour
 
     private void Update()
     {
+        // Refresh owner and effects once per tick
+        owner = null;
+        effects = null;
+
         // Conclude if no effects were found to avoid dead auras
         if (Effects.Length == 0)
         {
@@ -185,9 +196,12 @@ public class Aura : MonoBehaviour
             return;
         }
 
-        // Refresh owner and effects once per tick
-        owner = null;
-        effects = null;
+        // Conclude if no owner was found to avoid orphaned auras
+        if (owner == null)
+        {
+            Conclude();
+            return;
+        }
 
         // Check for failure
         if (failNextTick)
