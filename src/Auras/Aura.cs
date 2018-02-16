@@ -2,11 +2,6 @@
 using System.Text;
 using UnityEngine;
 
-/// <summary>
-/// An <see cref="Aura"/> is an aggregative behaviour that marshals <see cref="Effect"/>s
-/// and goes through a complex lifecycle doing so. It considers all <see cref="Effect"/>s
-/// on its <see cref="GameObject"/> as its own.
-/// </summary>
 [DisallowMultipleComponent]
 [DataContract]
 public class Aura : MonoBehaviour
@@ -16,11 +11,11 @@ public class Aura : MonoBehaviour
     [BitMask(typeof(AuraTags))]
     [SerializeField]
     [DataMember]
-    private AuraTags tags = AuraTags.None;
+    private AuraTags tags;
 
     [SerializeField]
     [DataMember]
-    private AuraType type = AuraType.None;
+    private AuraType type;
 
     [Header("On Conclusion")]
     [Tooltip("Destroys the gameObject on conclusion.")]
@@ -31,12 +26,12 @@ public class Aura : MonoBehaviour
     [Tooltip("Destroys the aura monobehaviour on conclusion.")]
     [SerializeField]
     [DataMember]
-    private bool destroySelf = false;
+    private bool destroySelf;
 
     [Tooltip("Destroys all effect monobehavious on conclusion.")]
     [SerializeField]
     [DataMember]
-    private bool destroyEffects = false;
+    private bool destroyEffects;
 
     [Header("Description")]
     [TextArea]
@@ -52,34 +47,14 @@ public class Aura : MonoBehaviour
     [DataMember]
     private bool failNextTick;
 
-    private Actor owner = null;
-    private Effect[] effects = null;
+    private Actor owner;
+    private Effect[] effects;
 
-    public Actor Owner
-    {
-        get
-        {
-            if (owner == null)
-            {
-                owner = GetComponentInParent<Actor>();
-            }
+    public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
+    public Effect[] Effects => effects ?? (effects = GetComponents<Effect>());
 
-            return owner;
-        }
-    }
-
-    public Effect[] Effects
-    {
-        get
-        {
-            if (effects == null)
-            {
-                effects = GetComponents<Effect>();
-            }
-
-            return effects;
-        }
-    }
+    public AuraTags Tags => tags;
+    public AuraType Type => type;
 
     public string Description
     {
@@ -110,25 +85,13 @@ public class Aura : MonoBehaviour
         }
     }
 
-    public void Fail()
-    {
-        failNextTick = true;
-    }
+    public void Fail() => failNextTick = true;
 
-    public void PreventFail()
-    {
-        failNextTick = false;
-    }
+    public void PreventFail() => failNextTick = false;
 
-    public bool Is(AuraType type)
-    {
-        return this.type.Is(type);
-    }
+    public bool Is(AuraType type) => this.type.Is(type);
 
-    public bool Is(AuraTags tags)
-    {
-        return this.tags.HasFlag(tags);
-    }
+    public bool Is(AuraTags tags) => this.tags.HasFlag(tags);
 
     private void Start()
     {
