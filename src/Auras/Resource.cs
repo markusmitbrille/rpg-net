@@ -1,4 +1,5 @@
-﻿using Autrage.LEX.NET.Serialization;
+﻿using Autrage.LEX.NET;
+using Autrage.LEX.NET.Serialization;
 using System;
 using UnityEngine;
 
@@ -32,6 +33,9 @@ public class Resource : Stat
     public ComplexStat Min => min;
     public ComplexStat Max => max;
     public ComplexStat Regen => regen;
+
+    public float Improvement => Arith.Avg(def.Improvement, min.Improvement, max.Improvement, regen.Improvement);
+    public float ActualImprovement => Arith.Avg(def.ActualImprovement, min.ActualImprovement, max.ActualImprovement, regen.ActualImprovement);
 
     public static Resource operator +(Resource resource, float number)
     {

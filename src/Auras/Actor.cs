@@ -77,25 +77,14 @@ public class Actor : MonoBehaviour
     public float Armour => armour;
     public float Knowledge => knowledge;
 
-    public float PrimaryImprovement => (armour.Improvement + might.Improvement + knowledge.Improvement) / 3f;
-    public float OffensiveImprovement => (might.Improvement + knowledge.Improvement) / 2f;
-    public float DefensiveImprovement => (armour.Improvement + knowledge.Improvement) / 2f;
-
     public float MinOffence => minOffence;
     public float MaxOffence => maxOffence;
     public float MinDefence => minDefence;
     public float MaxDefence => maxDefence;
 
-    public float Versatility => Armour == 0f && Might == 0f ? 0.5f : Might / (Might + Armour);
-
-    public float Offence => Mathf.Max(0f, minOffence > maxOffence ? Versatility : minOffence + (maxOffence - minOffence) * Versatility);
-    public float Defence => Mathf.Max(0f, minDefence > maxDefence ? Versatility : minDefence + (maxDefence - minDefence) * Versatility);
-
     public float Initiative => initiative;
     public float Haste => haste;
     public float Speed => speed;
-
-    public float SecondaryImprovement => (initiative.Improvement + haste.Improvement + speed.Improvement) / 3f;
 
     public float Life => life;
     public float Aether => aether;
@@ -103,6 +92,16 @@ public class Actor : MonoBehaviour
     public float Vim => vim;
 
     public float OutOfCombatRegenIterations => outOfCombatRegenIterations;
+
+    public float PrimaryImprovement => Arith.Avg(armour.Improvement, might.Improvement, knowledge.Improvement);
+    public float SecondaryImprovement => Arith.Avg(initiative.Improvement, haste.Improvement, speed.Improvement);
+    public float ResourceImprovement => Arith.Avg(life.Improvement, aether.Improvement, focus.Improvement, speed.Improvement);
+    public float OffensiveImprovement => Arith.Avg(might.Improvement, knowledge.Improvement);
+    public float DefensiveImprovement => Arith.Avg(armour.Improvement, knowledge.Improvement);
+
+    public float Versatility => Armour == 0f && Might == 0f ? 0.5f : Might / (Might + Armour);
+    public float Offence => Mathf.Max(0f, minOffence > maxOffence ? Versatility : minOffence + (maxOffence - minOffence) * Versatility);
+    public float Defence => Mathf.Max(0f, minDefence > maxDefence ? Versatility : minDefence + (maxDefence - minDefence) * Versatility);
 
     [DataMember]
     public bool IsInCombat { get; set; }
