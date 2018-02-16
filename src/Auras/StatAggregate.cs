@@ -9,6 +9,8 @@ public abstract class StatAggregate : Stat, IEnumerable<Stat>
     [DataMember]
     private List<Stat> contributors = new List<Stat>();
 
+    public void Add(Stat stat) => contributors.Add(stat);
+
     public void Add(params Stat[] stats) => contributors.AddRange(stats);
 
     public void Remove(params Stat[] stats) => stats.ForEach(stat => contributors.Remove(stat));
