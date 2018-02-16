@@ -9,7 +9,7 @@ public class ComplexStat : Stat
 {
     [SerializeField]
     [DataMember]
-    private float defaultBasis = 0f;
+    private float defaultBasis;
 
     [SerializeField]
     [DataMember]
@@ -17,15 +17,15 @@ public class ComplexStat : Stat
 
     [SerializeField]
     [DataMember]
-    private float defaultAddend = 0f;
+    private float defaultAddend;
 
     [SerializeField]
     [DataMember]
-    private float defaultMin = 0f;
+    private float defaultMin;
 
     [SerializeField]
     [DataMember]
-    private float defaultMax = 0f;
+    private float defaultMax;
 
     [DataMember]
     public Stat Basis { get; set; }
