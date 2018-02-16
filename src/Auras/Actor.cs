@@ -73,67 +73,43 @@ public class Actor : MonoBehaviour
 
     private Aura[] auras = null;
 
-    public float Might => Mathf.Max(0f, might?.Value ?? 0f);
-
-    public float Armour => Mathf.Max(0f, armour?.Value ?? 0f);
-
-    public float Knowledge => Mathf.Max(0f, knowledge?.Value ?? 0f);
+    public float Might => might;
+    public float Armour => armour;
+    public float Knowledge => knowledge;
 
     public float PrimaryImprovement => (armour.Improvement + might.Improvement + knowledge.Improvement) / 3f;
-
     public float OffensiveImprovement => (might.Improvement + knowledge.Improvement) / 2f;
-
     public float DefensiveImprovement => (armour.Improvement + knowledge.Improvement) / 2f;
 
-    public float MinOffence => Mathf.Max(0f, minOffence?.Value ?? 0f);
-
-    public float MaxOffence => Mathf.Max(0f, maxOffence?.Value ?? 0f);
-
-    public float MinDefence => Mathf.Max(0f, minDefence?.Value ?? 0f);
-
-    public float MaxDefence => Mathf.Max(0f, maxDefence?.Value ?? 0f);
+    public float MinOffence => minOffence;
+    public float MaxOffence => maxOffence;
+    public float MinDefence => minDefence;
+    public float MaxDefence => maxDefence;
 
     public float Versatility => Armour == 0f && Might == 0f ? 0.5f : Might / (Might + Armour);
 
-    public float Offence => Mathf.Max(0f, MinOffence > MaxOffence ? Versatility : MinOffence + (MaxOffence - MinOffence) * Versatility);
+    public float Offence => Mathf.Max(0f, minOffence > maxOffence ? Versatility : minOffence + (maxOffence - minOffence) * Versatility);
+    public float Defence => Mathf.Max(0f, minDefence > maxDefence ? Versatility : minDefence + (maxDefence - minDefence) * Versatility);
 
-    public float Defence => Mathf.Max(0f, MinDefence > MaxDefence ? Versatility : MinDefence + (MaxDefence - MinDefence) * Versatility);
-
-    public float Initiative => initiative?.Value ?? 0f;
-
-    public float Haste => Mathf.Max(0f, haste?.Value ?? 0f);
-
-    public float Speed => Mathf.Max(0f, speed?.Value ?? 0f);
+    public float Initiative => initiative;
+    public float Haste => haste;
+    public float Speed => speed;
 
     public float SecondaryImprovement => (initiative.Improvement + haste.Improvement + speed.Improvement) / 3f;
 
-    public float Life => Mathf.Max(0f, life?.Value ?? 0f);
+    public float Life => life;
+    public float Aether => aether;
+    public float Focus => focus;
+    public float Vim => vim;
 
-    public float Aether => Mathf.Max(0f, aether?.Value ?? 0f);
-
-    public float Focus => Mathf.Max(0f, focus?.Value ?? 0f);
-
-    public float Vim => Mathf.Max(0f, vim?.Value ?? 0f);
-
-    public float OutOfCombatRegenIterations => Mathf.Max(0f, outOfCombatRegenIterations?.Value ?? 0f);
+    public float OutOfCombatRegenIterations => outOfCombatRegenIterations;
 
     [DataMember]
     public bool IsInCombat { get; set; }
 
     public Actor Target { get; private set; }
 
-    public Aura[] Auras
-    {
-        get
-        {
-            if (auras == null)
-            {
-                auras = GetComponentsInChildren<Aura>();
-            }
-
-            return auras;
-        }
-    }
+    public Aura[] Auras => auras ?? (auras = GetComponentsInChildren<Aura>());
 
     public event EventHandler<DamageEventArgs> DealingDamage;
 
@@ -186,8 +162,6 @@ public class Actor : MonoBehaviour
         auras = null;
 
         RegenerateResources();
-
-        throw new NotImplementedException("Regen focus");
     }
 
     private void RegenerateResources()
@@ -237,67 +211,5 @@ public class Actor : MonoBehaviour
 
         // Invoke event during which parameters my be adjusted
         SufferedAura?.Invoke(this, e);
-    }
-
-    public class DamageEventArgs : EventArgs
-    {
-        public Aura Source { get; }
-        public Actor Origin { get; }
-
-        public Actor OriginalTarget { get; }
-        public DamageType OriginalType { get; }
-        public float OriginalAmount { get; }
-
-        public Actor Target { get; set; }
-        public DamageType Type { get; set; }
-        public float Amount { get; set; }
-
-        public bool IsDamage => Amount > 0f;
-        public bool IsHealing => Amount < 0f;
-
-        public DamageEventArgs(Aura source, Actor origin, Actor target, DamageType type, float amount)
-        {
-            origin.AssertNotNull(nameof(origin));
-            target.AssertNotNull(nameof(target));
-
-            Source = source;
-            Origin = origin;
-
-            OriginalTarget = target;
-            OriginalType = type;
-            OriginalAmount = amount;
-
-            Target = target;
-            Type = type;
-            Amount = amount;
-        }
-    }
-
-    public class AuraEventArgs : EventArgs
-    {
-        public Aura Source { get; }
-        public Actor Origin { get; }
-
-        public Actor OriginalTarget { get; }
-        public Aura OriginalPrefab { get; }
-
-        public Actor Target { get; set; }
-        public Aura Prefab { get; set; }
-
-        public AuraEventArgs(Aura source, Actor origin, Actor target, Aura prefab)
-        {
-            origin.AssertNotNull(nameof(origin));
-            target.AssertNotNull(nameof(target));
-            prefab.AssertNotNull(nameof(prefab));
-
-            Source = source;
-            Origin = origin;
-
-            OriginalTarget = target;
-            OriginalPrefab = prefab;
-
-            Target = target;
-            Prefab = prefab;
-        }
     }
 }
