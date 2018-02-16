@@ -10,7 +10,6 @@ using UnityEngine;
 /// of addends. Other stats constitute bases, multipliers and addends, making complex interrelated stats possible.</para>
 /// <para><see cref="Value"/> is bounded by <see cref="min"/> and <see cref="max"/>, if they are set and valid, if not
 /// it is equal to <see cref="Actual"/>.</para>
-/// <para>Take care that references are not lost during serialization.</para>
 /// </summary>
 [Serializable]
 [DataContract]

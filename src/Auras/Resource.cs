@@ -1,10 +1,12 @@
 ﻿using Autrage.LEX.NET.Serialization;
+using System;
 using UnityEngine;
 
 /// <summary>
 /// A special composite stat that represents a value bounded by <see cref="ComplexStat"/>s, which
 /// regenerates by <see cref="regen"/> over time and can be reset to a <see cref="def"/>.
 /// </summary>
+[Serializable]
 [DataContract]
 public class Resource : Stat
 {
