@@ -1,11 +1,6 @@
-﻿using ProtoBuf;
-using System;
-using UnityEngine;
+﻿using Autrage.LEX.NET.Serialization;
 
-[ProtoContract(AsReferenceDefault = true)]
-[ProtoInclude(1, typeof(SimpleStat))]
-[ProtoInclude(2, typeof(ComplexStat))]
-[ProtoInclude(3, typeof(Resource))]
+[DataContract]
 public abstract class Stat
 {
     public abstract float Value { get; }

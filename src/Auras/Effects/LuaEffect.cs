@@ -1,7 +1,8 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using Autrage.LEX.NET.Serialization;
 using System.Text;
+using UnityEngine;
 
+[DataContract]
 public class LuaEffect : Effect
 {
     private const string defaultChunkName = "Lua Effect Script";
@@ -79,28 +80,13 @@ public class LuaEffect : Effect
         return results.Length > 0 ? results[0] as StageResults? ?? StageResults.None : StageResults.None;
     }
 
-    public override void OnCompletion()
-    {
-        Monoton<LuaSandbox>.Instance.DoString(onCompletion ?? "", chunkName);
-    }
+    public override void OnCompletion() => Monoton<LuaSandbox>.Instance.DoString(onCompletion ?? "", chunkName);
 
-    public override void OnTermination()
-    {
-        Monoton<LuaSandbox>.Instance.DoString(onTermination ?? "", chunkName);
-    }
+    public override void OnTermination() => Monoton<LuaSandbox>.Instance.DoString(onTermination ?? "", chunkName);
 
-    public override void OnFailure()
-    {
-        Monoton<LuaSandbox>.Instance.DoString(onFailure ?? "", chunkName);
-    }
+    public override void OnFailure() => Monoton<LuaSandbox>.Instance.DoString(onFailure ?? "", chunkName);
 
-    public override void OnConclusion()
-    {
-        Monoton<LuaSandbox>.Instance.DoString(onConclusion ?? "", chunkName);
-    }
+    public override void OnConclusion() => Monoton<LuaSandbox>.Instance.DoString(onConclusion ?? "", chunkName);
 
-    public override StringBuilder AppendDescription(StringBuilder description)
-    {
-        return description.Append(this.description ?? "");
-    }
+    public override StringBuilder AppendDescription(StringBuilder description) => description.Append(this.description ?? "");
 }

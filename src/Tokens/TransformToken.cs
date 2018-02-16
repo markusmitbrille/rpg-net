@@ -1,23 +1,42 @@
-﻿using ProtoBuf;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Autrage.LEX.NET.Serialization;
 using UnityEngine;
 
+[DataContract]
 [DisallowMultipleComponent]
-public class TransformToken : DataDrivenBehaviour
+public class TransformToken : MonoBehaviour
 {
-    [ProtoContract(Name = "Vector3Token")]
-    struct Vector3Token
+    [DataMember]
+    private Vector3Token Position
     {
-        [ProtoMember(1)]
-        float x;
-        [ProtoMember(2)]
-        float y;
-        [ProtoMember(3)]
-        float z;
+        get { return new Vector3Token(transform.localPosition); }
+        set { transform.localPosition = value.ToVector3(); }
+    }
+
+    [DataMember]
+    private Vector3Token Rotation
+    {
+        get { return new Vector3Token(transform.localEulerAngles); }
+        set { transform.localEulerAngles = value.ToVector3(); }
+    }
+
+    [DataMember]
+    private Vector3Token Scale
+    {
+        get { return new Vector3Token(transform.localScale); }
+        set { transform.localScale = value.ToVector3(); }
+    }
+
+    [DataContract]
+    private struct Vector3Token
+    {
+        [DataMember]
+        private float x;
+
+        [DataMember]
+        private float y;
+
+        [DataMember]
+        private float z;
 
         public Vector3Token(Vector3 vector3)
         {
@@ -34,26 +53,5 @@ public class TransformToken : DataDrivenBehaviour
             result.z = z;
             return result;
         }
-    }
-
-    [DataMember(1)]
-    Vector3Token Position
-    {
-        get { return new Vector3Token(transform.localPosition); }
-        set { transform.localPosition = value.ToVector3(); }
-    }
-
-    [DataMember(2)]
-    Vector3Token Rotation
-    {
-        get { return new Vector3Token(transform.localEulerAngles); }
-        set { transform.localEulerAngles = value.ToVector3(); }
-    }
-
-    [DataMember(3)]
-    Vector3Token Scale
-    {
-        get { return new Vector3Token(transform.localScale); }
-        set { transform.localScale = value.ToVector3(); }
     }
 }

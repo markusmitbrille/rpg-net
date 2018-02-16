@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Autrage.LEX.NET.Serialization;
+using System.Text;
 using UnityEngine;
 
 /// <summary>
@@ -7,8 +8,11 @@ using UnityEngine;
 /// on its <see cref="GameObject"/> as its own.
 /// </summary>
 [DisallowMultipleComponent]
-public class Aura : DataDrivenBehaviour
+[DataContract]
+public class Aura : MonoBehaviour
 {
+    private const string DescriptionSeperator = "---";
+
     [BitMask(typeof(AuraTags))]
     [SerializeField]
     [DataMember]
@@ -23,10 +27,12 @@ public class Aura : DataDrivenBehaviour
     [SerializeField]
     [DataMember]
     private bool destroyGameObject = true;
+
     [Tooltip("Destroys the aura monobehaviour on conclusion.")]
     [SerializeField]
     [DataMember]
     private bool destroySelf = false;
+
     [Tooltip("Destroys all effect monobehavious on conclusion.")]
     [SerializeField]
     [DataMember]
@@ -47,6 +53,8 @@ public class Aura : DataDrivenBehaviour
     private bool failNextTick;
 
     private Actor owner = null;
+    private Effect[] effects = null;
+
     public Actor Owner
     {
         get
@@ -60,7 +68,6 @@ public class Aura : DataDrivenBehaviour
         }
     }
 
-    private Effect[] effects = null;
     public Effect[] Effects
     {
         get
@@ -74,7 +81,6 @@ public class Aura : DataDrivenBehaviour
         }
     }
 
-    private const string DescriptionSeperator = "---";
     public string Description
     {
         get
@@ -102,6 +108,26 @@ public class Aura : DataDrivenBehaviour
 
             return description.ToString();
         }
+    }
+
+    public void Fail()
+    {
+        failNextTick = true;
+    }
+
+    public void PreventFail()
+    {
+        failNextTick = false;
+    }
+
+    public bool Is(AuraType type)
+    {
+        return this.type.Is(type);
+    }
+
+    public bool Is(AuraTags tags)
+    {
+        return this.tags.HasFlag(tags);
     }
 
     private void Start()
@@ -256,25 +282,5 @@ public class Aura : DataDrivenBehaviour
         {
             Destroy(gameObject);
         }
-    }
-
-    public void Fail()
-    {
-        failNextTick = true;
-    }
-
-    public void PreventFail()
-    {
-        failNextTick = false;
-    }
-
-    public bool Is(AuraType type)
-    {
-        return this.type.Is(type);
-    }
-
-    public bool Is(AuraTags tags)
-    {
-        return this.tags.HasFlag(tags);
     }
 }

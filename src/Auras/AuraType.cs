@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Autrage.LEX.NET.Extensions;
+using System.Collections.Generic;
 
 public enum AuraType
 {

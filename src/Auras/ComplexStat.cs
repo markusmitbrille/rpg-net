@@ -1,4 +1,5 @@
-﻿using ProtoBuf;
+﻿using Autrage.LEX.NET;
+using Autrage.LEX.NET.Serialization;
 using System;
 using System.Collections.Generic;
 using UnityEditor;
@@ -12,107 +13,54 @@ using UnityEngine;
 /// <para>Take care that references are not lost during serialization.</para>
 /// </summary>
 [Serializable]
-[ProtoContract(AsReferenceDefault = true, SkipConstructor = true)]
+[DataContract]
 public class ComplexStat : Stat
 {
-    [CustomPropertyDrawer(typeof(ComplexStat))]
-    public class ComplexStatDrawer : PropertyDrawer
-    {
-        private const float xLabelWidth = 15f;
-        private const float plusLabelWidth = 15f;
-        private const float elementOfLabelWidth = 30f;
-        private const float semicolonLabelWidth = 8f;
-        private const float closingBracketLabelWidth = 8f;
+    [DataMember]
+    public Stat min = null;
 
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
-        {
-            label = EditorGUI.BeginProperty(position, label, property);
-            position = EditorGUI.PrefixLabel(position, label);
-
-            float fieldWidth = (position.width - xLabelWidth - plusLabelWidth - elementOfLabelWidth - semicolonLabelWidth - closingBracketLabelWidth) / 5f;
-
-            // Temporarily remove indent for lists and sub-properties
-            EditorGUI.indentLevel = 0;
-
-            position.width = fieldWidth;
-            EditorGUI.PropertyField(position, property.FindPropertyRelative(nameof(defaultBasis)), GUIContent.none);
-
-            position.x += fieldWidth;
-            position.width = xLabelWidth;
-            GUI.Label(position, "✕", new GUIStyle() { alignment = TextAnchor.MiddleCenter });
-
-            position.x += xLabelWidth;
-            position.width = fieldWidth;
-            EditorGUI.PropertyField(position, property.FindPropertyRelative(nameof(defaultMultiplier)), GUIContent.none);
-
-            position.x += fieldWidth;
-            position.width = plusLabelWidth;
-            GUI.Label(position, "+", new GUIStyle() { alignment = TextAnchor.MiddleCenter });
-
-            position.x += plusLabelWidth;
-            position.width = fieldWidth;
-            EditorGUI.PropertyField(position, property.FindPropertyRelative(nameof(defaultAddend)), GUIContent.none);
-
-            position.x += fieldWidth;
-            position.width = elementOfLabelWidth;
-            GUI.Label(position, "∈[ ", new GUIStyle() { alignment = TextAnchor.MiddleRight });
-
-            position.x += elementOfLabelWidth;
-            position.width = fieldWidth;
-            EditorGUI.PropertyField(position, property.FindPropertyRelative(nameof(defaultMin)), GUIContent.none);
-
-            position.x += fieldWidth;
-            position.width = semicolonLabelWidth;
-            GUI.Label(position, ";", new GUIStyle() { alignment = TextAnchor.MiddleCenter });
-
-            position.x += semicolonLabelWidth;
-            position.width = fieldWidth;
-            EditorGUI.PropertyField(position, property.FindPropertyRelative(nameof(defaultMax)), GUIContent.none);
-
-            position.x += fieldWidth;
-            position.width = closingBracketLabelWidth;
-            GUI.Label(position, " ]", new GUIStyle() { alignment = TextAnchor.MiddleLeft });
-
-            EditorGUI.EndProperty();
-        }
-    }
-
-    // Default values
+    [DataMember]
+    public Stat max = null;
 
     [SerializeField]
-    [ProtoMember(1)]
+    [DataMember]
     private float defaultBasis = 0f;
+
     [SerializeField]
-    [ProtoMember(2)]
+    [DataMember]
     private float defaultMultiplier = 1f;
+
     [SerializeField]
-    [ProtoMember(3)]
+    [DataMember]
     private float defaultAddend = 0f;
 
     [SerializeField]
-    [ProtoMember(4)]
+    [DataMember]
     private float defaultMin = 0f;
+
     [SerializeField]
-    [ProtoMember(5)]
+    [DataMember]
     private float defaultMax = 0f;
 
-    // Runtime values
-
-    [ProtoMember(6)]
+    [DataMember]
     private List<Stat> bases = new List<Stat>();
-    [ProtoMember(7)]
+
+    [DataMember]
     private List<Stat> multipliers = new List<Stat>();
-    [ProtoMember(8)]
+
+    [DataMember]
     private List<Stat> addends = new List<Stat>();
 
-    [ProtoMember(9)]
-    public Stat min = null;
-    [ProtoMember(10)]
-    public Stat max = null;
-
-    // Accessor properties
-
     private float? basis = null;
+
+    private float? multiplier = null;
+
+    private float? addend = null;
+
+    private float? value = null;
+
+    private float? actual = null;
+
     public float Basis
     {
         get
@@ -154,7 +102,6 @@ public class ComplexStat : Stat
         }
     }
 
-    private float? multiplier = null;
     public float Multiplier
     {
         get
@@ -196,7 +143,6 @@ public class ComplexStat : Stat
         }
     }
 
-    private float? addend = null;
     public float Addend
     {
         get
@@ -239,9 +185,9 @@ public class ComplexStat : Stat
     }
 
     public float? Min { get { return min?.Value; } }
+
     public float? Max { get { return max?.Value; } }
 
-    private float? value = null;
     public override float Value
     {
         get
@@ -270,7 +216,6 @@ public class ComplexStat : Stat
         }
     }
 
-    private float? actual = null;
     public float Actual
     {
         get
@@ -285,9 +230,11 @@ public class ComplexStat : Stat
     }
 
     public float DefaultValue { get { return defaultMin > defaultMax ? DefaultActual : Mathf.Clamp(DefaultActual, defaultMin, defaultMax); } }
+
     public float DefaultActual { get { return defaultBasis * defaultMultiplier + defaultAddend; } }
 
     public float Improvement { get { return Value / DefaultValue; } }
+
     public float ActualImprovement { get { return Actual / DefaultActual; } }
 
     /// <summary>
@@ -301,6 +248,60 @@ public class ComplexStat : Stat
 
         min = new SimpleStat(defaultMin);
         max = new SimpleStat(defaultMax);
+    }
+
+    /// <summary>
+    /// Adds <paramref name="num"/> to <see cref="bases"/> of <paramref name="stat"/>.
+    /// </summary>
+    public static ComplexStat operator +(ComplexStat stat, float num)
+    {
+        stat.AddBasis(num);
+        return stat;
+    }
+
+    /// <summary>
+    /// Adds <paramref name="num"/> to <see cref="bases"/> of <paramref name="stat"/>.
+    /// </summary>
+    public static ComplexStat operator +(float num, ComplexStat stat)
+    {
+        stat.AddBasis(num);
+        return stat;
+    }
+
+    /// <summary>
+    /// Adds negative of <paramref name="num"/> to <see cref="bases"/> of <paramref name="stat"/>.
+    /// </summary>
+    public static ComplexStat operator -(ComplexStat stat, float num)
+    {
+        stat.AddBasis(-num);
+        return stat;
+    }
+
+    /// <summary>
+    /// Adds <paramref name="num"/> to <see cref="multipliers"/> of <paramref name="stat"/>.
+    /// </summary>
+    public static ComplexStat operator *(ComplexStat stat, float num)
+    {
+        stat.AddMultiplier(num);
+        return stat;
+    }
+
+    /// <summary>
+    /// Adds <paramref name="num"/> to <see cref="multipliers"/> of <paramref name="stat"/>.
+    /// </summary>
+    public static ComplexStat operator *(float num, ComplexStat stat)
+    {
+        stat.AddMultiplier(num);
+        return stat;
+    }
+
+    /// <summary>
+    /// Adds inverse <paramref name="num"/> to <see cref="multipliers"/> of <paramref name="stat"/>.
+    /// </summary>
+    public static ComplexStat operator /(ComplexStat stat, float num)
+    {
+        stat.AddMultiplier(1f / num);
+        return stat;
     }
 
     public void AddBasis(Stat basis)
@@ -422,57 +423,65 @@ public class ComplexStat : Stat
         RemoveAddend(new SimpleStat(basis));
     }
 
-    /// <summary>
-    /// Adds <paramref name="num"/> to <see cref="bases"/> of <paramref name="stat"/>.
-    /// </summary>
-    public static ComplexStat operator +(ComplexStat stat, float num)
+    [CustomPropertyDrawer(typeof(ComplexStat))]
+    public class ComplexStatDrawer : PropertyDrawer
     {
-        stat.AddBasis(num);
-        return stat;
-    }
+        private const float xLabelWidth = 15f;
+        private const float plusLabelWidth = 15f;
+        private const float elementOfLabelWidth = 30f;
+        private const float semicolonLabelWidth = 8f;
+        private const float closingBracketLabelWidth = 8f;
 
-    /// <summary>
-    /// Adds <paramref name="num"/> to <see cref="bases"/> of <paramref name="stat"/>.
-    /// </summary>
-    public static ComplexStat operator +(float num, ComplexStat stat)
-    {
-        stat.AddBasis(num);
-        return stat;
-    }
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            label = EditorGUI.BeginProperty(position, label, property);
+            position = EditorGUI.PrefixLabel(position, label);
 
-    /// <summary>
-    /// Adds negative of <paramref name="num"/> to <see cref="bases"/> of <paramref name="stat"/>.
-    /// </summary>
-    public static ComplexStat operator -(ComplexStat stat, float num)
-    {
-        stat.AddBasis(-num);
-        return stat;
-    }
+            float fieldWidth = (position.width - xLabelWidth - plusLabelWidth - elementOfLabelWidth - semicolonLabelWidth - closingBracketLabelWidth) / 5f;
 
-    /// <summary>
-    /// Adds <paramref name="num"/> to <see cref="multipliers"/> of <paramref name="stat"/>.
-    /// </summary>
-    public static ComplexStat operator *(ComplexStat stat, float num)
-    {
-        stat.AddMultiplier(num);
-        return stat;
-    }
+            // Temporarily remove indent for lists and sub-properties
+            EditorGUI.indentLevel = 0;
 
-    /// <summary>
-    /// Adds <paramref name="num"/> to <see cref="multipliers"/> of <paramref name="stat"/>.
-    /// </summary>
-    public static ComplexStat operator *(float num, ComplexStat stat)
-    {
-        stat.AddMultiplier(num);
-        return stat;
-    }
+            position.width = fieldWidth;
+            EditorGUI.PropertyField(position, property.FindPropertyRelative(nameof(defaultBasis)), GUIContent.none);
 
-    /// <summary>
-    /// Adds inverse <paramref name="num"/> to <see cref="multipliers"/> of <paramref name="stat"/>.
-    /// </summary>
-    public static ComplexStat operator /(ComplexStat stat, float num)
-    {
-        stat.AddMultiplier(1f / num);
-        return stat;
+            position.x += fieldWidth;
+            position.width = xLabelWidth;
+            GUI.Label(position, "✕", new GUIStyle() { alignment = TextAnchor.MiddleCenter });
+
+            position.x += xLabelWidth;
+            position.width = fieldWidth;
+            EditorGUI.PropertyField(position, property.FindPropertyRelative(nameof(defaultMultiplier)), GUIContent.none);
+
+            position.x += fieldWidth;
+            position.width = plusLabelWidth;
+            GUI.Label(position, "+", new GUIStyle() { alignment = TextAnchor.MiddleCenter });
+
+            position.x += plusLabelWidth;
+            position.width = fieldWidth;
+            EditorGUI.PropertyField(position, property.FindPropertyRelative(nameof(defaultAddend)), GUIContent.none);
+
+            position.x += fieldWidth;
+            position.width = elementOfLabelWidth;
+            GUI.Label(position, "∈[ ", new GUIStyle() { alignment = TextAnchor.MiddleRight });
+
+            position.x += elementOfLabelWidth;
+            position.width = fieldWidth;
+            EditorGUI.PropertyField(position, property.FindPropertyRelative(nameof(defaultMin)), GUIContent.none);
+
+            position.x += fieldWidth;
+            position.width = semicolonLabelWidth;
+            GUI.Label(position, ";", new GUIStyle() { alignment = TextAnchor.MiddleCenter });
+
+            position.x += semicolonLabelWidth;
+            position.width = fieldWidth;
+            EditorGUI.PropertyField(position, property.FindPropertyRelative(nameof(defaultMax)), GUIContent.none);
+
+            position.x += fieldWidth;
+            position.width = closingBracketLabelWidth;
+            GUI.Label(position, " ]", new GUIStyle() { alignment = TextAnchor.MiddleLeft });
+
+            EditorGUI.EndProperty();
+        }
     }
 }
