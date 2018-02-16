@@ -8,19 +8,13 @@ using UnityEngine;
 /// <summary>
 /// <para>Represents a composite stat that is calculated as a sum of bases, times a product of multipliers, plus a sum
 /// of addends. Other stats constitute bases, multipliers and addends, making complex interrelated stats possible.</para>
-/// <para><see cref="Value"/> is bounded by <see cref="min"/> and <see cref="max"/>, if they are set and valid, if not
+/// <para><see cref="Value"/> is bounded by <see cref="Min"/> and <see cref="Max"/>, if they are set and valid, if not
 /// it is equal to <see cref="Actual"/>.</para>
 /// </summary>
 [Serializable]
 [DataContract]
 public class ComplexStat : Stat
 {
-    [DataMember]
-    public Stat min = null;
-
-    [DataMember]
-    public Stat max = null;
-
     [SerializeField]
     [DataMember]
     private float defaultBasis = 0f;
@@ -183,9 +177,15 @@ public class ComplexStat : Stat
         }
     }
 
-    public float? Min { get { return min?.Value; } }
+    [DataMember]
+    public Stat Min { get; set; }
 
-    public float? Max { get { return max?.Value; } }
+    [DataMember]
+    public Stat Max { get; set; }
+
+    public float? MinValue { get { return Min?.Value; } }
+
+    public float? MaxValue { get { return Max?.Value; } }
 
     public override float Value
     {
@@ -193,20 +193,20 @@ public class ComplexStat : Stat
         {
             if (!value.HasValue)
             {
-                if (min == null && max == null || min?.Value > max?.Value)
+                if (Min == null && Max == null || Min?.Value > Max?.Value)
                 {
                     // No bounds set or invalid
                     value = Actual;
                 }
                 else
                 {
-                    if (min != null)
+                    if (Min != null)
                     {
-                        value = Mathf.Max(min.Value, Actual);
+                        value = Mathf.Max(Min.Value, Actual);
                     }
-                    if (max != null)
+                    if (Max != null)
                     {
-                        value = Mathf.Min(min.Value, Actual);
+                        value = Mathf.Min(Min.Value, Actual);
                     }
                 }
             }
@@ -245,8 +245,8 @@ public class ComplexStat : Stat
         AddMultiplier(defaultMultiplier);
         AddAddend(defaultAddend);
 
-        min = new SimpleStat(defaultMin);
-        max = new SimpleStat(defaultMax);
+        Min = new SimpleStat(defaultMin);
+        Max = new SimpleStat(defaultMax);
     }
 
     /// <summary>
