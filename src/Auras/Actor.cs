@@ -6,6 +6,9 @@ using UnityEngine;
 [DataContract]
 public class Actor : MonoBehaviour
 {
+    private const int damageTimeToLive = 255;
+    private const int auraTimeToLive = 255;
+
     [Header("Primary Attributes")]
     [SerializeField]
     [DataMember]
@@ -73,25 +76,25 @@ public class Actor : MonoBehaviour
 
     private Aura[] auras;
 
-    public float Might => might;
-    public float Armour => armour;
-    public float Knowledge => knowledge;
+    public ComplexStat Might => might;
+    public ComplexStat Armour => armour;
+    public ComplexStat Knowledge => knowledge;
 
-    public float MinOffence => minOffence;
-    public float MaxOffence => maxOffence;
-    public float MinDefence => minDefence;
-    public float MaxDefence => maxDefence;
+    public ComplexStat MinOffence => minOffence;
+    public ComplexStat MaxOffence => maxOffence;
+    public ComplexStat MinDefence => minDefence;
+    public ComplexStat MaxDefence => maxDefence;
 
-    public float Initiative => initiative;
-    public float Haste => haste;
-    public float Speed => speed;
+    public ComplexStat Initiative => initiative;
+    public ComplexStat Haste => haste;
+    public ComplexStat Speed => speed;
 
-    public float Life => life;
-    public float Aether => aether;
-    public float Focus => focus;
-    public float Vim => vim;
+    public Resource Life => life;
+    public Resource Aether => aether;
+    public Resource Focus => focus;
+    public Resource Vim => vim;
 
-    public float OutOfCombatRegenIterations => outOfCombatRegenIterations;
+    public ComplexStat OutOfCombatRegenIterations => outOfCombatRegenIterations;
 
     public float PrimaryImprovement => Arith.Avg(armour.Improvement, might.Improvement, knowledge.Improvement);
     public float SecondaryImprovement => Arith.Avg(initiative.Improvement, haste.Improvement, speed.Improvement);
@@ -110,50 +113,21 @@ public class Actor : MonoBehaviour
 
     public Aura[] Auras => auras ?? (auras = GetComponentsInChildren<Aura>());
 
-    public event EventHandler<DamageEventArgs> DealingDamage;
+    public event EventHandler<PreDamageEventArgs> SendingDamage;
+    public event EventHandler<PostDamageEventArgs> SentDamage;
 
-    public event EventHandler<DamageEventArgs> DealtDamage;
+    public event EventHandler<PreDamageEventArgs> ReceivingDamage;
+    public event EventHandler<PostDamageEventArgs> ReceivedDamage;
 
-    public event EventHandler<DamageEventArgs> TakingDamage;
+    public event EventHandler<PreAuraEventArgs> SendingAura;
+    public event EventHandler<PostAuraEventArgs> SentAura;
 
-    public event EventHandler<DamageEventArgs> TookDamage;
+    public event EventHandler<PreAuraEventArgs> ReceivingAura;
+    public event EventHandler<PostAuraEventArgs> ReceivedAura;
 
-    public event EventHandler<AuraEventArgs> ApplyingAura;
+    public void SendDamage(Aura source, Actor receiver, DamageType type, float amount) => SendDamage(source, receiver, type, amount, damageTimeToLive);
 
-    public event EventHandler<AuraEventArgs> AppliedAura;
-
-    public event EventHandler<AuraEventArgs> SufferingAura;
-
-    public event EventHandler<AuraEventArgs> SufferedAura;
-
-    public void DealDamage(Aura source, Actor target, DamageType type, float amount)
-    {
-        DamageEventArgs e = new DamageEventArgs(source, this, target, type, amount);
-
-        // Invoke event during which parameters may be adjusted
-        DealingDamage?.Invoke(this, e);
-
-        // Apply offence last
-        e.Amount *= Offence;
-
-        e.Target?.TakeDamage(e);
-
-        // Invoke event during which parameters may be adjusted
-        DealtDamage?.Invoke(this, e);
-    }
-
-    public void ApplyAura(Aura source, Actor target, Aura prefab)
-    {
-        AuraEventArgs e = new AuraEventArgs(source, this, target, prefab);
-
-        // Invoke event during which parameters may be adjusted
-        ApplyingAura?.Invoke(this, e);
-
-        e.Target?.SufferAura(e);
-
-        // Invoke event during which parameters may be adjusted
-        AppliedAura?.Invoke(this, e);
-    }
+    public void SendAura(Aura source, Actor receiver, Aura prefab) => SendAura(source, receiver, prefab, auraTimeToLive);
 
     private void Update()
     {
@@ -178,37 +152,82 @@ public class Actor : MonoBehaviour
         } while (!IsInCombat && iteration < iterations);
     }
 
-    private void TakeDamage(DamageEventArgs e)
+    private void SendDamage(Aura source, Actor receiver, DamageType type, float amount, int ttl)
     {
-        e.AssertNotNull(nameof(e));
-
-        // Invoke event during which parameters may be adjusted
-        TakingDamage?.Invoke(this, e);
-
-        // Apply defence last
-        e.Amount *= Defence;
-
-        float oldLifeValue = Life;
-        life += e.Amount;
-        e.Amount = Life - oldLifeValue;
-
-        // Invoke event during which parameters may be adjusted
-        TookDamage?.Invoke(this, e);
-    }
-
-    private void SufferAura(AuraEventArgs e)
-    {
-        e.AssertNotNull(nameof(e));
-
-        // Invoke event during which parameters may be adjusted
-        SufferingAura?.Invoke(this, e);
-
-        if (e.Prefab != null)
+        if (ttl < 0)
         {
-            Instantiate(e.Prefab, transform);
+            return;
         }
 
-        // Invoke event during which parameters may be adjusted
-        SufferedAura?.Invoke(this, e);
+        PreDamageEventArgs e = new PreDamageEventArgs(source, this, receiver, type, amount);
+
+        SendingDamage?.Invoke(this, e);
+        if (e.IsInvalid)
+        {
+            return;
+        }
+
+        e.Receiver.ReceiveDamage(source, this, e.Type, e.Amount, ttl);
+    }
+
+    private void ReceiveDamage(Aura source, Actor sender, DamageType type, float amount, int ttl)
+    {
+        PreDamageEventArgs e = new PreDamageEventArgs(source, sender, this, type, amount);
+
+        ReceivingDamage?.Invoke(this, e);
+        if (e.IsInvalid)
+        {
+            return;
+        }
+        if (e.Receiver != this)
+        {
+            SendDamage(source, e.Receiver, e.Type, e.Amount, --ttl);
+            return;
+        }
+
+        float old = life;
+        life.Set(life + e.Amount);
+        e.Amount = life - old;
+
+        ReceivedDamage?.Invoke(this, new PostDamageEventArgs(source, sender, this, e.Type, e.Amount));
+        sender.SentDamage?.Invoke(sender, new PostDamageEventArgs(source, sender, this, e.Type, e.Amount));
+    }
+
+    private void SendAura(Aura source, Actor receiver, Aura prefab, int ttl)
+    {
+        if (ttl < 0)
+        {
+            return;
+        }
+
+        PreAuraEventArgs e = new PreAuraEventArgs(source, this, receiver, prefab);
+
+        SendingAura?.Invoke(this, e);
+        if (e.IsInvalid)
+        {
+            return;
+        }
+
+        e.Receiver.ReceiveAura(source, this, e.Prefab, ttl);
+    }
+
+    private void ReceiveAura(Aura source, Actor sender, Aura prefab, int ttl)
+    {
+        PreAuraEventArgs e = new PreAuraEventArgs(source, sender, this, prefab);
+        ReceivingAura?.Invoke(this, e);
+        if (e.IsInvalid)
+        {
+            return;
+        }
+        if (e.Receiver != this)
+        {
+            SendAura(source, e.Receiver, e.Prefab, --ttl);
+            return;
+        }
+
+        Instantiate(e.Prefab, transform);
+
+        ReceivedAura?.Invoke(this, new PostAuraEventArgs(source, sender, this, e.Prefab));
+        sender.SentAura?.Invoke(sender, new PostAuraEventArgs(source, sender, this, e.Prefab));
     }
 }

@@ -37,22 +37,6 @@ public class Resource : Stat
     public float Improvement => Arith.Avg(def.Improvement, min.Improvement, max.Improvement, regen.Improvement);
     public float ActualImprovement => Arith.Avg(def.ActualImprovement, min.ActualImprovement, max.ActualImprovement, regen.ActualImprovement);
 
-    public static Resource operator +(Resource resource, float number) => resource.SetValue(resource.value + number);
-
-    public static Resource operator +(float number, Resource resource) => resource.SetValue(resource.value + number);
-
-    public static Resource operator -(Resource resource, float number) => resource.SetValue(resource.value - number);
-
-    public static Resource operator -(float number, Resource resource) => resource.SetValue(number - resource.value);
-
-    public static Resource operator *(Resource resource, float number) => resource.SetValue(resource.value * number);
-
-    public static Resource operator *(float number, Resource resource) => resource.SetValue(resource.value * number);
-
-    public static Resource operator /(Resource resource, float number) => resource.SetValue(resource.value / number);
-
-    public static Resource operator /(float number, Resource resource) => resource.SetValue(number / resource.value);
-
     public void Reset() => Set(def);
 
     public void Regenerate() => Set(value + regen * Time.deltaTime);
@@ -67,11 +51,5 @@ public class Resource : Stat
         {
             this.value = Mathf.Clamp(value, min, max);
         }
-    }
-
-    private Resource SetValue(float value)
-    {
-        Set(value);
-        return this;
     }
 }
