@@ -28,12 +28,12 @@ public class Aura : MonoBehaviour
     [DataMember]
     private bool destroyGameObject = true;
 
-    [Tooltip("Destroys the aura monobehaviour on conclusion.")]
+    [Tooltip("Destroys the aura mono behaviour on conclusion.")]
     [SerializeField]
     [DataMember]
     private bool destroySelf;
 
-    [Tooltip("Destroys all effect monobehavious on conclusion.")]
+    [Tooltip("Destroys all effect mono behaviours on conclusion.")]
     [SerializeField]
     [DataMember]
     private bool destroyEffects;
