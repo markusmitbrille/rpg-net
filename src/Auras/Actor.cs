@@ -6,11 +6,6 @@ using UnityEngine;
 [DataContract]
 public class Actor : MonoBehaviour
 {
-    public event EventHandler<PackageEventArgs> SendingPackage;
-    public event EventHandler<ReportEventArgs> SentPackage;
-    public event EventHandler<PackageEventArgs> ReceivingPackage;
-    public event EventHandler<ReportEventArgs> ReceivedPackage;
-
     [Header("Primary Attributes")]
     [SerializeField]
     [DataMember]
@@ -112,10 +107,18 @@ public class Actor : MonoBehaviour
     public bool IsInCombat { get; set; }
 
     public Actor Target { get; private set; }
-
     public Aura[] Auras => auras ?? (auras = GetComponentsInChildren<Aura>());
 
+    public event EventHandler<PackageEventArgs> SendingPackage;
+    public event EventHandler<ReportEventArgs> SentPackage;
+
+    public event EventHandler<PackageEventArgs> ReceivingPackage;
+    public event EventHandler<ReportEventArgs> ReceivedPackage;
+
+    public override string ToString() => name;
+
     public void SendDamage(Aura source, Actor receiver, DamageType type, float amount) => SendPackage(new Damage() { Source = source, Sender = this, Receiver = receiver, Type = type, Amount = amount });
+
     public void SendSpell(Aura source, Actor receiver, Aura prefab) => SendPackage(new Spell() { Source = source, Sender = this, Receiver = receiver, Prefab = prefab });
 
     public void SendPackage(Package package)

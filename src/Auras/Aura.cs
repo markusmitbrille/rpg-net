@@ -60,9 +60,9 @@ public class Aura : MonoBehaviour
     {
         get
         {
-            // Create string builder with summary for performant string concatenation
+            // Create string builder for performant string concatenation
             StringBuilder description = new StringBuilder(summary);
-
+            
             foreach (Effect effect in Effects)
             {
                 // Append the seperator with blank lines before and after
@@ -93,6 +93,8 @@ public class Aura : MonoBehaviour
 
     public bool Is(AuraTags tags) => this.tags.HasFlag(tags);
 
+    public override string ToString() => name;
+
     private void Start()
     {
         // Conclude if no effects were found to avoid dead auras
@@ -103,7 +105,7 @@ public class Aura : MonoBehaviour
         }
 
         // Conclude if no owner was found to avoid orphaned auras
-        if (owner == null)
+        if (Owner == null)
         {
             Conclude();
             return;
@@ -160,7 +162,7 @@ public class Aura : MonoBehaviour
         }
 
         // Conclude if no owner was found to avoid orphaned auras
-        if (owner == null)
+        if (Owner == null)
         {
             Conclude();
             return;

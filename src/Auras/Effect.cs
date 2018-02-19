@@ -1,13 +1,19 @@
 ﻿using Autrage.LEX.NET.Serialization;
 using System;
-using System.Text;
 using UnityEngine;
 
 [RequireComponent(typeof(Aura))]
 [DataContract]
 public abstract class Effect : MonoBehaviour
 {
+    private Actor owner;
+    private Aura aura;
+
+    public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
+    public Aura Aura => aura ?? (aura = GetComponentInParent<Aura>());
+
     public abstract string Description { get; }
+    public Actor Target => Owner?.Target;
 
     public virtual StageResults OnPreApplication() => StageResults.None;
 
@@ -31,6 +37,15 @@ public abstract class Effect : MonoBehaviour
 
     public virtual void OnConclusion()
     {
+    }
+
+    private void Update()
+    {
+        // Refresh owner once per tick
+        owner = null;
+
+        // Refresh aura once per tick
+        aura = null;
     }
 
     [Flags]
