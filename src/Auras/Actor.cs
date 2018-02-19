@@ -71,7 +71,7 @@ public class Actor : MonoBehaviour
     [DataMember]
     private ComplexStat outOfCombatRegenIterations = new ComplexStat();
 
-    private Aura[] auras = null;
+    private Aura[] auras;
 
     public float Might => might;
     public float Armour => armour;
