@@ -2,7 +2,6 @@
 using System;
 using UnityEngine;
 
-[RequireComponent(typeof(Aura))]
 [DataContract]
 public abstract class Effect : MonoBehaviour
 {
@@ -44,13 +43,27 @@ public abstract class Effect : MonoBehaviour
     {
     }
 
+    public virtual bool CanDestroy() => true;
+
     private void Update()
     {
-        // Refresh owner once per tick
+        // Refresh owner and aura once per tick
         owner = null;
-
-        // Refresh aura once per tick
         aura = null;
+
+        // Destroy if no owner was found to avoid orphaned effects
+        if (Owner == null)
+        {
+            Destroy(this);
+            return;
+        }
+
+        // Destroy if no aura was found to avoid dead effects
+        if (Aura == null)
+        {
+            Destroy(this);
+            return;
+        }
     }
 
     [Flags]

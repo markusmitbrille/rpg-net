@@ -2,7 +2,7 @@
 {
     public Aura Prefab { get; }
 
-    public SpellReport(Aura source, Actor sender, Actor receiver, Aura prefab) : base(source, sender, receiver)
+    public SpellReport(Skill origin, Aura source, Actor sender, Actor receiver, Aura prefab) : base(origin, source, sender, receiver)
     {
         Prefab = prefab;
     }

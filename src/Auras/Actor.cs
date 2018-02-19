@@ -118,9 +118,9 @@ public class Actor : MonoBehaviour
 
     public override string ToString() => name;
 
-    public void SendDamage(Aura source, Actor receiver, DamageType type, float amount) => SendPackage(new Damage() { Source = source, Sender = this, Receiver = receiver, Type = type, Amount = amount });
+    public void SendDamage(Skill origin, Aura source, Actor receiver, DamageType type, float amount) => SendPackage(new Damage(origin, source, this) { Receiver = receiver, Type = type, Amount = amount });
 
-    public void SendSpell(Aura source, Actor receiver, Aura prefab) => SendPackage(new Spell() { Source = source, Sender = this, Receiver = receiver, Prefab = prefab });
+    public void SendSpell(Skill origin, Aura source, Actor receiver, Aura prefab) => SendPackage(new Spell(origin, source, this) { Receiver = receiver, Prefab = prefab });
 
     public void SendPackage(Package package)
     {
