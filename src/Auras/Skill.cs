@@ -24,6 +24,20 @@ public class Skill : MonoBehaviour
     public bool HasActive => active != null;
     public bool HasPassive => passive != null;
 
+    public Aura Use()
+    {
+        if (!HasActive)
+        {
+            return null;
+        }
+        if (Cooldown > 0f)
+        {
+            return null;
+        }
+
+        return Owner.SendSpell(this, null, Owner, active);
+    }
+
     private void Update()
     {
         // Refresh owner once per tick
