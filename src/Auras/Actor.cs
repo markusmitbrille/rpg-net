@@ -6,8 +6,10 @@ using UnityEngine;
 [DataContract]
 public class Actor : MonoBehaviour
 {
-    private const int damageTimeToLive = 255;
-    private const int auraTimeToLive = 255;
+    public event EventHandler<PackageEventArgs> SendingPackage;
+    public event EventHandler<ReportEventArgs> SentPackage;
+    public event EventHandler<PackageEventArgs> ReceivingPackage;
+    public event EventHandler<ReportEventArgs> ReceivedPackage;
 
     [Header("Primary Attributes")]
     [SerializeField]
@@ -113,21 +115,29 @@ public class Actor : MonoBehaviour
 
     public Aura[] Auras => auras ?? (auras = GetComponentsInChildren<Aura>());
 
-    public event EventHandler<PreDamageEventArgs> SendingDamage;
-    public event EventHandler<PostDamageEventArgs> SentDamage;
+    public void SendDamage(Aura source, Actor receiver, DamageType type, float amount) => SendPackage(new Damage() { Source = source, Sender = this, Receiver = receiver, Type = type, Amount = amount });
+    public void SendSpell(Aura source, Actor receiver, Aura prefab) => SendPackage(new Spell() { Source = source, Sender = this, Receiver = receiver, Prefab = prefab });
 
-    public event EventHandler<PreDamageEventArgs> ReceivingDamage;
-    public event EventHandler<PostDamageEventArgs> ReceivedDamage;
+    public void SendPackage(Package package)
+    {
+        if (!package.IsValid)
+        {
+            return;
+        }
 
-    public event EventHandler<PreAuraEventArgs> SendingAura;
-    public event EventHandler<PostAuraEventArgs> SentAura;
+        SendingPackage?.Invoke(this, new PackageEventArgs(package));
+        if (!package.IsValid)
+        {
+            return;
+        }
+        if (package.Sender != this)
+        {
+            package.Sender.SendPackage(package);
+            return;
+        }
 
-    public event EventHandler<PreAuraEventArgs> ReceivingAura;
-    public event EventHandler<PostAuraEventArgs> ReceivedAura;
-
-    public void SendDamage(Aura source, Actor receiver, DamageType type, float amount) => SendDamage(source, receiver, type, amount, damageTimeToLive);
-
-    public void SendAura(Aura source, Actor receiver, Aura prefab) => SendAura(source, receiver, prefab, auraTimeToLive);
+        package.Receiver.ReceivePackage(package);
+    }
 
     private void Update()
     {
@@ -152,82 +162,28 @@ public class Actor : MonoBehaviour
         } while (!IsInCombat && iteration < iterations);
     }
 
-    private void SendDamage(Aura source, Actor receiver, DamageType type, float amount, int ttl)
+    private void ReceivePackage(Package package)
     {
-        if (ttl < 0)
+        if (!package.IsValid)
         {
             return;
         }
 
-        PreDamageEventArgs e = new PreDamageEventArgs(source, this, receiver, type, amount);
-
-        SendingDamage?.Invoke(this, e);
-        if (e.IsInvalid)
+        ReceivingPackage?.Invoke(this, new PackageEventArgs(package));
+        if (!package.IsValid)
         {
             return;
         }
-
-        e.Receiver.ReceiveDamage(source, this, e.Type, e.Amount, ttl);
-    }
-
-    private void ReceiveDamage(Aura source, Actor sender, DamageType type, float amount, int ttl)
-    {
-        PreDamageEventArgs e = new PreDamageEventArgs(source, sender, this, type, amount);
-
-        ReceivingDamage?.Invoke(this, e);
-        if (e.IsInvalid)
+        if (package.Receiver != this)
         {
-            return;
-        }
-        if (e.Receiver != this)
-        {
-            SendDamage(source, e.Receiver, e.Type, e.Amount, --ttl);
+            package.Tick();
+            package.Sender.SendPackage(package);
             return;
         }
 
-        float old = life;
-        life.Set(life + e.Amount);
-        e.Amount = life - old;
+        Report report = package.Unwrap();
 
-        ReceivedDamage?.Invoke(this, new PostDamageEventArgs(source, sender, this, e.Type, e.Amount));
-        sender.SentDamage?.Invoke(sender, new PostDamageEventArgs(source, sender, this, e.Type, e.Amount));
-    }
-
-    private void SendAura(Aura source, Actor receiver, Aura prefab, int ttl)
-    {
-        if (ttl < 0)
-        {
-            return;
-        }
-
-        PreAuraEventArgs e = new PreAuraEventArgs(source, this, receiver, prefab);
-
-        SendingAura?.Invoke(this, e);
-        if (e.IsInvalid)
-        {
-            return;
-        }
-
-        e.Receiver.ReceiveAura(source, this, e.Prefab, ttl);
-    }
-
-    private void ReceiveAura(Aura source, Actor sender, Aura prefab, int ttl)
-    {
-        PreAuraEventArgs e = new PreAuraEventArgs(source, sender, this, prefab);
-        ReceivingAura?.Invoke(this, e);
-        if (e.IsInvalid)
-        {
-            return;
-        }
-        if (e.Receiver != this)
-        {
-            SendAura(source, e.Receiver, e.Prefab, --ttl);
-            return;
-        }
-
-        Instantiate(e.Prefab, transform);
-
-        ReceivedAura?.Invoke(this, new PostAuraEventArgs(source, sender, this, e.Prefab));
-        sender.SentAura?.Invoke(sender, new PostAuraEventArgs(source, sender, this, e.Prefab));
+        ReceivedPackage?.Invoke(this, new ReportEventArgs(report));
+        report.Sender.SentPackage?.Invoke(report.Sender, new ReportEventArgs(report));
     }
 }
