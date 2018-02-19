@@ -6,13 +6,18 @@ using UnityEngine;
 [DataContract]
 public abstract class Effect : MonoBehaviour
 {
-    private Actor owner;
-    private Aura aura;
+    [SerializeField]
+    [ReadOnly]
+    [DataMember]
+    private int id;
 
-    public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
-    public Aura Aura => aura ?? (aura = GetComponent<Aura>());
+    private Aura aura;
+    private Actor owner;
 
     public abstract string Description { get; }
+
+    public Aura Aura => aura ?? (aura = GetComponent<Aura>());
+    public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
     public Actor Target => Owner?.Target;
 
     public virtual StageResults OnPreApplication() => StageResults.None;

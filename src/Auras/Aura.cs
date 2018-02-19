@@ -8,6 +8,11 @@ public class Aura : MonoBehaviour
 {
     private const string DescriptionSeperator = "---";
 
+    [SerializeField]
+    [ReadOnly]
+    [DataMember]
+    private int id;
+
     [BitMask(typeof(AuraTags))]
     [SerializeField]
     [DataMember]
@@ -50,11 +55,12 @@ public class Aura : MonoBehaviour
     private Actor owner;
     private Effect[] effects;
 
-    public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
-    public Effect[] Effects => effects ?? (effects = GetComponents<Effect>());
-
+    public int ID => id;
     public AuraTags Tags => tags;
     public AuraType Type => type;
+
+    public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
+    public Effect[] Effects => effects ?? (effects = GetComponents<Effect>());
 
     public string Description
     {
@@ -62,7 +68,7 @@ public class Aura : MonoBehaviour
         {
             // Create string builder for performant string concatenation
             StringBuilder description = new StringBuilder(summary);
-            
+
             foreach (Effect effect in Effects)
             {
                 // Append the seperator with blank lines before and after
