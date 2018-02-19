@@ -20,23 +20,6 @@ public class Actor : MonoBehaviour
     [DataMember]
     private ComplexStat knowledge = new ComplexStat();
 
-    [Header("Versatility")]
-    [SerializeField]
-    [DataMember]
-    private ComplexStat minOffence = new ComplexStat();
-
-    [SerializeField]
-    [DataMember]
-    private ComplexStat maxOffence = new ComplexStat();
-
-    [SerializeField]
-    [DataMember]
-    private ComplexStat minDefence = new ComplexStat();
-
-    [SerializeField]
-    [DataMember]
-    private ComplexStat maxDefence = new ComplexStat();
-
     [Header("Secondary Attributes")]
     [SerializeField]
     [DataMember]
@@ -67,6 +50,23 @@ public class Actor : MonoBehaviour
     [DataMember]
     private Resource vim = new Resource();
 
+    [Header("Versatility")]
+    [SerializeField]
+    [DataMember]
+    private ComplexStat minOffence = new ComplexStat();
+
+    [SerializeField]
+    [DataMember]
+    private ComplexStat maxOffence = new ComplexStat();
+
+    [SerializeField]
+    [DataMember]
+    private ComplexStat minDefence = new ComplexStat();
+
+    [SerializeField]
+    [DataMember]
+    private ComplexStat maxDefence = new ComplexStat();
+
     [Header("Minor Stats")]
     [SerializeField]
     [DataMember]
@@ -78,11 +78,6 @@ public class Actor : MonoBehaviour
     public ComplexStat Armour => armour;
     public ComplexStat Knowledge => knowledge;
 
-    public ComplexStat MinOffence => minOffence;
-    public ComplexStat MaxOffence => maxOffence;
-    public ComplexStat MinDefence => minDefence;
-    public ComplexStat MaxDefence => maxDefence;
-
     public ComplexStat Initiative => initiative;
     public ComplexStat Haste => haste;
     public ComplexStat Speed => speed;
@@ -91,6 +86,11 @@ public class Actor : MonoBehaviour
     public Resource Aether => aether;
     public Resource Focus => focus;
     public Resource Vim => vim;
+
+    public ComplexStat MinOffence => minOffence;
+    public ComplexStat MaxOffence => maxOffence;
+    public ComplexStat MinDefence => minDefence;
+    public ComplexStat MaxDefence => maxDefence;
 
     public ComplexStat OutOfCombatRegenIterations => outOfCombatRegenIterations;
 
