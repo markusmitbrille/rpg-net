@@ -8,6 +8,15 @@ public class Aura : MonoBehaviour
 {
     private const string DescriptionSeperator = "---";
 
+    [DataMember]
+    private Skill origin;
+
+    [DataMember]
+    private Aura source;
+
+    private Actor owner;
+    private Effect[] effects;
+
     [SerializeField]
     [ReadOnly]
     [DataMember]
@@ -22,22 +31,6 @@ public class Aura : MonoBehaviour
     [DataMember]
     private AuraType type;
 
-    [Header("On Conclusion")]
-    [Tooltip("Destroys the gameObject on conclusion.")]
-    [SerializeField]
-    [DataMember]
-    private bool destroyGameObject = true;
-
-    [Tooltip("Destroys the aura mono behaviour on conclusion.")]
-    [SerializeField]
-    [DataMember]
-    private bool destroySelf;
-
-    [Tooltip("Destroys all effect mono behaviours on conclusion.")]
-    [SerializeField]
-    [DataMember]
-    private bool destroyEffects;
-
     [Header("Description")]
     [TextArea]
     [SerializeField]
@@ -50,56 +43,66 @@ public class Aura : MonoBehaviour
     private string flavour = "";
 
     [DataMember]
-    private bool failNextTick;
+    private bool isFailing;
 
-    private Actor owner;
-    private Effect[] effects;
+    [DataMember]
+    private bool hasConcluded;
+
+    public Skill Origin => origin;
+    public Aura Source => source;
+
+    public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
+    public Effect[] Effects => effects ?? (effects = GetComponents<Effect>());
 
     public int ID => id;
     public AuraTags Tags => tags;
     public AuraType Type => type;
 
-    public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
-    public Effect[] Effects => effects ?? (effects = GetComponents<Effect>());
+    public string Name => name;
+    public string Summary => summary;
+    public string Flavour => flavour;
+    public string Description => ComposeDescription();
 
-    public string Description
-    {
-        get
-        {
-            // Create string builder for performant string concatenation
-            StringBuilder description = new StringBuilder(summary);
+    public bool IsFailing => isFailing;
+    public bool HasConcluded => hasConcluded;
 
-            foreach (Effect effect in Effects)
-            {
-                // Append the seperator with blank lines before and after
-                description.AppendLine().AppendLine(DescriptionSeperator).AppendLine();
+    public Aura Instantiate(Actor actor, Skill origin, Aura source) => Instantiate(this, actor.transform, source);
 
-                // Append the effect's description
-                description.Append(effect.Description);
-            }
+    public void Fail() => isFailing = true;
 
-            if (!string.IsNullOrEmpty(flavour) && !string.IsNullOrWhiteSpace(flavour))
-            {
-                // Append the seperator with blank lines before and after
-                description.AppendLine().AppendLine(DescriptionSeperator).AppendLine();
-
-                // Append the ability's flavour text
-                description.AppendLine(flavour);
-            }
-
-            return description.ToString();
-        }
-    }
-
-    public void Fail() => failNextTick = true;
-
-    public void PreventFail() => failNextTick = false;
+    public void PreventFail() => isFailing = false;
 
     public bool Is(AuraType type) => this.type.Is(type);
 
     public bool Is(AuraTags tags) => this.tags.HasFlag(tags);
 
     public override string ToString() => name;
+
+    private string ComposeDescription()
+    {
+        // Create string builder for performant string concatenation
+        StringBuilder description = new StringBuilder(summary);
+
+        foreach (Effect effect in Effects)
+        {
+            // Append the seperator with blank lines before and after
+            description.AppendLine().AppendLine(DescriptionSeperator).AppendLine();
+
+            // Append the effect's description
+            description.Append(effect.Description);
+        }
+
+        if (!string.IsNullOrEmpty(flavour) && !string.IsNullOrWhiteSpace(flavour))
+        {
+            // Append the seperator with blank lines before and after
+            description.AppendLine().AppendLine(DescriptionSeperator).AppendLine();
+
+            // Append the ability's flavour text
+            description.AppendLine(flavour);
+        }
+
+        return description.ToString();
+    }
 
     private void Start()
     {
@@ -175,10 +178,17 @@ public class Aura : MonoBehaviour
         }
 
         // Check for failure
-        if (failNextTick)
+        if (isFailing)
         {
-            failNextTick = false;
+            isFailing = false;
             Fail();
+            return;
+        }
+
+        // Destroy concluded aura when ready
+        if (CanDestroy())
+        {
+            Destroy(gameObject);
             return;
         }
 
@@ -250,22 +260,24 @@ public class Aura : MonoBehaviour
             effect.OnConclusion();
         }
 
-        if (destroyEffects)
+        hasConcluded = true;
+    }
+
+    private bool CanDestroy()
+    {
+        if (!hasConcluded)
         {
-            foreach (Effect effect in Effects)
+            return false;
+        }
+
+        foreach (Effect effect in Effects)
+        {
+            if (!effect.CanDestroy())
             {
-                Destroy(effect);
+                return false;
             }
         }
 
-        if (destroySelf)
-        {
-            Destroy(this);
-        }
-
-        if (destroyGameObject)
-        {
-            Destroy(gameObject);
-        }
+        return true;
     }
 }

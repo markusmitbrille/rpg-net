@@ -6,9 +6,9 @@ public class SpellEffect : Effect
 {
     [SerializeField]
     [DataMember]
-    private Aura Prefab;
+    private Aura prefab;
 
-    public override string Description => $"Applies {Prefab} to {Target} on completion.";
+    public override string Description => $"Applies {prefab} to {Target} on completion.";
 
-    public override void OnCompletion() => Owner.SendSpell(Aura, Target, Prefab);
+    public override void OnCompletion() => Owner.SendSpell(Aura.Origin, Aura, Target, prefab);
 }
