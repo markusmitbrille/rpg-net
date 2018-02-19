@@ -130,7 +130,7 @@ public class Actor : MonoBehaviour
     {
         DamageEventArgs e = new DamageEventArgs(source, this, target, type, amount);
 
-        // Invoke event during which parameters my be adjusted
+        // Invoke event during which parameters may be adjusted
         DealingDamage?.Invoke(this, e);
 
         // Apply offence last
@@ -138,7 +138,7 @@ public class Actor : MonoBehaviour
 
         e.Target?.TakeDamage(e);
 
-        // Invoke event during which parameters my be adjusted
+        // Invoke event during which parameters may be adjusted
         DealtDamage?.Invoke(this, e);
     }
 
@@ -146,12 +146,12 @@ public class Actor : MonoBehaviour
     {
         AuraEventArgs e = new AuraEventArgs(source, this, target, prefab);
 
-        // Invoke event during which parameters my be adjusted
+        // Invoke event during which parameters may be adjusted
         ApplyingAura?.Invoke(this, e);
 
         e.Target?.SufferAura(e);
 
-        // Invoke event during which parameters my be adjusted
+        // Invoke event during which parameters may be adjusted
         AppliedAura?.Invoke(this, e);
     }
 
@@ -182,7 +182,7 @@ public class Actor : MonoBehaviour
     {
         e.AssertNotNull(nameof(e));
 
-        // Invoke event during which parameters my be adjusted
+        // Invoke event during which parameters may be adjusted
         TakingDamage?.Invoke(this, e);
 
         // Apply defence last
@@ -192,7 +192,7 @@ public class Actor : MonoBehaviour
         life += e.Amount;
         e.Amount = Life - oldLifeValue;
 
-        // Invoke event during which parameters my be adjusted
+        // Invoke event during which parameters may be adjusted
         TookDamage?.Invoke(this, e);
     }
 
@@ -200,7 +200,7 @@ public class Actor : MonoBehaviour
     {
         e.AssertNotNull(nameof(e));
 
-        // Invoke event during which parameters my be adjusted
+        // Invoke event during which parameters may be adjusted
         SufferingAura?.Invoke(this, e);
 
         if (e.Prefab != null)
@@ -208,7 +208,7 @@ public class Actor : MonoBehaviour
             Instantiate(e.Prefab, transform);
         }
 
-        // Invoke event during which parameters my be adjusted
+        // Invoke event during which parameters may be adjusted
         SufferedAura?.Invoke(this, e);
     }
 }
