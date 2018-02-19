@@ -1,6 +1,7 @@
 ﻿using Autrage.LEX.NET.Serialization;
 using UnityEngine;
 
+[DataContract]
 public class Skill : MonoBehaviour
 {
     private Actor owner;
