@@ -3,7 +3,7 @@ using UnityEngine;
 
 [DataContract]
 [DisallowMultipleComponent]
-public class TransformToken : MonoBehaviour
+public sealed class TransformToken : MonoBehaviour
 {
     [DataMember]
     private Vector3 Position
