@@ -3,6 +3,7 @@ using Autrage.LEX.NET.Serialization;
 using System;
 using UnityEngine;
 
+[DisallowMultipleComponent]
 [DataContract]
 public class Actor : MonoBehaviour
 {

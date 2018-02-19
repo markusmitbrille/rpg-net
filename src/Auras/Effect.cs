@@ -10,7 +10,7 @@ public abstract class Effect : MonoBehaviour
     private Aura aura;
 
     public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
-    public Aura Aura => aura ?? (aura = GetComponentInParent<Aura>());
+    public Aura Aura => aura ?? (aura = GetComponent<Aura>());
 
     public abstract string Description { get; }
     public Actor Target => Owner?.Target;
