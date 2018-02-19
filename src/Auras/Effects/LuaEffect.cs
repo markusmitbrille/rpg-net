@@ -1,5 +1,4 @@
 ﻿using Autrage.LEX.NET.Serialization;
-using System.Text;
 using UnityEngine;
 
 [DataContract]
@@ -7,14 +6,14 @@ public class LuaEffect : Effect
 {
     private const string defaultChunkName = "Lua Effect Script";
 
-    [SerializeField]
-    [DataMember]
-    private string chunkName = defaultChunkName;
-
     [TextArea]
     [SerializeField]
     [DataMember]
     private string description = "";
+
+    [SerializeField]
+    [DataMember]
+    private string chunkName = defaultChunkName;
 
     [TextArea]
     [SerializeField]
@@ -56,6 +55,8 @@ public class LuaEffect : Effect
     [DataMember]
     private string onConclusion = "";
 
+    public override string Description => description;
+
     public override StageResults OnPreApplication()
     {
         object[] results = Monoton<LuaSandbox>.Instance.DoString(onPreApplication ?? "", chunkName);
@@ -87,6 +88,4 @@ public class LuaEffect : Effect
     public override void OnFailure() => Monoton<LuaSandbox>.Instance.DoString(onFailure ?? "", chunkName);
 
     public override void OnConclusion() => Monoton<LuaSandbox>.Instance.DoString(onConclusion ?? "", chunkName);
-
-    public override StringBuilder AppendDescription(StringBuilder description) => description.Append(this.description ?? "");
 }

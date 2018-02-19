@@ -69,7 +69,7 @@ public class Aura : MonoBehaviour
                 description.AppendLine().AppendLine(DescriptionSeperator).AppendLine();
 
                 // Append the effect's description
-                effect.AppendDescription(description);
+                description.Append(effect.Description);
             }
 
             if (!string.IsNullOrEmpty(flavour) && !string.IsNullOrWhiteSpace(flavour))

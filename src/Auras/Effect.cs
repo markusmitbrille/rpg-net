@@ -7,6 +7,8 @@ using UnityEngine;
 [DataContract]
 public abstract class Effect : MonoBehaviour
 {
+    public abstract string Description { get; }
+
     public virtual StageResults OnPreApplication() => StageResults.None;
 
     public virtual StageResults OnPreUpdate() => StageResults.None;
@@ -30,11 +32,6 @@ public abstract class Effect : MonoBehaviour
     public virtual void OnConclusion()
     {
     }
-
-    /// <summary>
-    /// Appends its own description to the longer description string and returns the <see cref="StringBuilder"/>;
-    /// </summary>
-    public abstract StringBuilder AppendDescription(StringBuilder description);
 
     [Flags]
     public enum StageResults
