@@ -1,8 +1,8 @@
 ﻿public class PackageEventArgs
 {
-    public Package Package { get; }
+    public IPackage Package { get; }
 
-    public PackageEventArgs(Package package)
+    public PackageEventArgs(IPackage package)
     {
         Package = package;
     }

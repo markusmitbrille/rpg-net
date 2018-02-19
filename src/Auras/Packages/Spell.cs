@@ -1,4 +1,4 @@
-﻿public class Spell : Package
+﻿public class Spell : Package<Aura>
 {
     public Aura Prefab { get; set; }
 
@@ -8,9 +8,9 @@
     {
     }
 
-    public override Report Unwrap()
+    public override Report<Aura> Unwrap()
     {
-        Prefab.Instantiate(Receiver, Origin, Source);
-        return new SpellReport(Origin, Source, Sender, Receiver, Prefab);
+        Aura content = Prefab.Instantiate(Receiver, Origin, Source);
+        return new SpellReport(Origin, Source, Sender, Receiver, content, Prefab);
     }
 }

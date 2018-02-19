@@ -1,4 +1,4 @@
-﻿public class Damage : Package
+﻿public class Damage : Package<bool>
 {
     public DamageType Type { get; set; }
     public float Amount { get; set; }
@@ -12,11 +12,12 @@
     {
     }
 
-    public override Report Unwrap()
+    public override Report<bool> Unwrap()
     {
         float old = Receiver.Life;
         Receiver.Life.Set(Receiver.Life - Amount);
 
-        return new DamageReport(Origin, Source, Sender, Receiver, Type, old - Receiver.Life);
+        float actual = old - Receiver.Life;
+        return new DamageReport(Origin, Source, Sender, Receiver, actual != 0f, Type, actual);
     }
 }

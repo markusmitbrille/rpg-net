@@ -1,8 +1,8 @@
 ﻿public class ReportEventArgs
 {
-    public Report Report { get; }
+    public IReport Report { get; }
 
-    public ReportEventArgs(Report report)
+    public ReportEventArgs(IReport report)
     {
         Report = report;
     }

@@ -118,29 +118,50 @@ public class Actor : MonoBehaviour
 
     public override string ToString() => name;
 
-    public void SendDamage(Skill origin, Aura source, Actor receiver, DamageType type, float amount) => SendPackage(new Damage(origin, source, this) { Receiver = receiver, Type = type, Amount = amount });
+    public bool SendDamage(Skill origin, Aura source, Actor receiver, DamageType type, float amount) => SendPackage(new Damage(origin, source, this) { Receiver = receiver, Type = type, Amount = amount });
 
-    public void SendSpell(Skill origin, Aura source, Actor receiver, Aura prefab) => SendPackage(new Spell(origin, source, this) { Receiver = receiver, Prefab = prefab });
+    public Aura SendSpell(Skill origin, Aura source, Actor receiver, Aura prefab) => SendPackage(new Spell(origin, source, this) { Receiver = receiver, Prefab = prefab });
 
-    public void SendPackage(Package package)
+    public T SendPackage<T>(Package<T> package)
     {
         if (!package.IsValid)
         {
-            return;
+            return default(T);
         }
 
         SendingPackage?.Invoke(this, new PackageEventArgs(package));
         if (!package.IsValid)
         {
-            return;
+            return default(T);
         }
         if (package.Sender != this)
         {
             package.Sender.SendPackage(package);
-            return;
+            return default(T);
         }
 
-        package.Receiver.ReceivePackage(package);
+        return package.Receiver.ReceivePackage(package);
+    }
+
+    public object SendPackage(IPackage package)
+    {
+        if (!package.IsValid)
+        {
+            return null;
+        }
+
+        SendingPackage?.Invoke(this, new PackageEventArgs(package));
+        if (!package.IsValid)
+        {
+            return null;
+        }
+        if (package.Sender != this)
+        {
+            package.Sender.SendPackage(package);
+            return null;
+        }
+
+        return package.Receiver.ReceivePackage(package);
     }
 
     private void Update()
@@ -166,28 +187,57 @@ public class Actor : MonoBehaviour
         } while (!IsInCombat && iteration < iterations);
     }
 
-    private void ReceivePackage(Package package)
+    private T ReceivePackage<T>(Package<T> package)
     {
         if (!package.IsValid)
         {
-            return;
+            return default(T);
         }
 
         ReceivingPackage?.Invoke(this, new PackageEventArgs(package));
         if (!package.IsValid)
         {
-            return;
+            return default(T);
         }
         if (package.Receiver != this)
         {
             package.Tick();
             package.Sender.SendPackage(package);
-            return;
+            return default(T);
         }
 
-        Report report = package.Unwrap();
+        Report<T> report = package.Unwrap();
 
         ReceivedPackage?.Invoke(this, new ReportEventArgs(report));
         report.Sender.SentPackage?.Invoke(report.Sender, new ReportEventArgs(report));
+
+        return report.Content;
+    }
+
+    private object ReceivePackage(IPackage package)
+    {
+        if (!package.IsValid)
+        {
+            return null;
+        }
+
+        ReceivingPackage?.Invoke(this, new PackageEventArgs(package));
+        if (!package.IsValid)
+        {
+            return null;
+        }
+        if (package.Receiver != this)
+        {
+            package.Tick();
+            package.Sender.SendPackage(package);
+            return null;
+        }
+
+        IReport report = package.Unwrap();
+
+        ReceivedPackage?.Invoke(this, new ReportEventArgs(report));
+        report.Sender.SentPackage?.Invoke(report.Sender, new ReportEventArgs(report));
+
+        return report.Content;
     }
 }

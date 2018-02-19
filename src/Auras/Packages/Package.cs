@@ -1,4 +1,4 @@
-﻿public abstract class Package
+﻿public abstract class Package<T> : IPackage
 {
     private int ttl = 255;
 
@@ -16,7 +16,9 @@
         Sender = sender;
     }
 
-    public abstract Report Unwrap();
+    public abstract Report<T> Unwrap();
 
     public void Tick() => ttl--;
+
+    IReport IPackage.Unwrap() => Unwrap();
 }
