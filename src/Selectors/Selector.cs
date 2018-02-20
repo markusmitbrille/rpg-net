@@ -11,6 +11,9 @@ public abstract class Selector : MonoBehaviour, IEnumerable<Actor>, IEnumerable
     private Actor owner;
     public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
 
+    public abstract Vector3 Position { get; }
+    public abstract Quaternion Rotation { get; }
+
     public abstract IEnumerable<Actor> Targets { get; }
     public abstract bool HasTargets { get; }
 

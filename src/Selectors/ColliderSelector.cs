@@ -1,27 +1,29 @@
 ﻿using Autrage.LEX.NET.Serialization;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 [DataContract]
-public abstract class ColliderSelector : Selector
+public abstract class ColliderSelector : ConfirmedSelector
 {
-    private Rigidbody body;
-
     [DataMember]
     private List<Actor> targets = new List<Actor>();
 
     public sealed override IEnumerable<Actor> Targets => targets.AsReadOnly();
 
-    public Vector3 Aim => Owner.Aim;
-
     private void Start()
     {
-        body = GetComponent<Rigidbody>();
-        if (body == null)
+        if (GetComponentsInChildren<Collider>().Any())
         {
-            body = gameObject.AddComponent<Rigidbody>();
+            Rigidbody body = GetComponent<Rigidbody>() ?? gameObject.AddComponent<Rigidbody>();
             body.isKinematic = true;
         }
+    }
+
+    private void Update()
+    {
+        transform.position = Position;
+        transform.rotation = Rotation;
     }
 
     private void OnTriggerEnter(Collider other)
