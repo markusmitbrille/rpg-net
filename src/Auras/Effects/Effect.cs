@@ -23,9 +23,9 @@ public abstract class Effect : MonoBehaviour
 
     public virtual StageResults OnPreUpdate() => StageResults.None;
 
-    public virtual StageResults OnApplication() => StageResults.None;
+    public virtual StageResults OnApplication() => StageResults.CanComplete;
 
-    public virtual StageResults OnUpdate() => StageResults.None;
+    public virtual StageResults OnUpdate() => StageResults.CanComplete;
 
     public virtual void OnCompletion()
     {
@@ -70,7 +70,7 @@ public abstract class Effect : MonoBehaviour
     public enum StageResults
     {
         None = 0,
-        Completed = 1 << 0,
+        CanComplete = 1 << 0,
         Terminated = 1 << 1,
         Failed = 1 << 2,
     }

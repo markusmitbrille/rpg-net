@@ -150,7 +150,7 @@ public class Aura : MonoBehaviour
             Failure();
             return;
         }
-        if (applicationResults.HasFlag(Effect.StageResults.Completed))
+        if (applicationResults == Effect.StageResults.CanComplete)
         {
             Complete();
             return;
@@ -222,7 +222,7 @@ public class Aura : MonoBehaviour
             Failure();
             return;
         }
-        if (updateResults.HasFlag(Effect.StageResults.Completed))
+        if (updateResults == Effect.StageResults.CanComplete)
         {
             Complete();
             return;
