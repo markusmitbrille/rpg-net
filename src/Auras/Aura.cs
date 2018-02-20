@@ -1,6 +1,7 @@
 ﻿using Autrage.LEX.NET.Serialization;
 using System.Text;
 using UnityEngine;
+using static Autrage.LEX.NET.Bugger;
 
 [DisallowMultipleComponent]
 [DataContract]
@@ -109,6 +110,7 @@ public class Aura : MonoBehaviour
         // Conclude if no effects were found to avoid dead auras
         if (Effects.Length == 0)
         {
+            Warning($"No effects found on {this}!");
             Conclude();
             return;
         }
@@ -116,6 +118,7 @@ public class Aura : MonoBehaviour
         // Conclude if no owner was found to avoid orphaned auras
         if (Owner == null)
         {
+            Warning($"Could not get owner of {this}!");
             Conclude();
             return;
         }
@@ -166,6 +169,7 @@ public class Aura : MonoBehaviour
         // Conclude if no effects were found to avoid dead auras
         if (Effects.Length == 0)
         {
+            Warning($"No effects found on {this}!");
             Conclude();
             return;
         }
@@ -173,6 +177,7 @@ public class Aura : MonoBehaviour
         // Conclude if no owner was found to avoid orphaned auras
         if (Owner == null)
         {
+            Warning($"Could not get owner of {this}!");
             Conclude();
             return;
         }

@@ -1,6 +1,7 @@
 ﻿using Autrage.LEX.NET.Serialization;
 using System;
 using UnityEngine;
+using static Autrage.LEX.NET.Bugger;
 
 [DataContract]
 public abstract class Effect : MonoBehaviour
@@ -54,6 +55,7 @@ public abstract class Effect : MonoBehaviour
         // Destroy if no owner was found to avoid orphaned effects
         if (Owner == null)
         {
+            Warning($"Could not get owner of {this}!");
             Destroy(this);
             return;
         }
@@ -61,6 +63,7 @@ public abstract class Effect : MonoBehaviour
         // Destroy if no aura was found to avoid dead effects
         if (Aura == null)
         {
+            Warning($"Could not get aura of {this}!");
             Destroy(this);
             return;
         }
