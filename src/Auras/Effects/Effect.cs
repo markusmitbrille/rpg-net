@@ -18,7 +18,6 @@ public abstract class Effect : MonoBehaviour
 
     public Aura Aura => aura ?? (aura = GetComponent<Aura>());
     public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
-    public Actor Target => Owner.Target;
 
     public virtual StageResults OnPreApplication() => StageResults.None;
 

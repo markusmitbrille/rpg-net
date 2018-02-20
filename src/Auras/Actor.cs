@@ -5,7 +5,7 @@ using UnityEngine;
 
 [DisallowMultipleComponent]
 [DataContract]
-public class Actor : MonoBehaviour
+public abstract class Actor : MonoBehaviour
 {
     [Header("Primary Attributes")]
     [SerializeField]
@@ -107,7 +107,9 @@ public class Actor : MonoBehaviour
     [DataMember]
     public bool IsInCombat { get; set; }
 
-    public Actor Target { get; private set; }
+    public abstract Actor Target { get; }
+    public abstract Vector3  Aim { get; }
+
     public Aura[] Auras => auras ?? (auras = GetComponentsInChildren<Aura>());
 
     public event EventHandler<PackageEventArgs> SendingPackage;

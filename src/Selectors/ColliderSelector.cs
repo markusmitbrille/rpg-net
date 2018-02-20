@@ -3,28 +3,30 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [DataContract]
-public abstract class ColliderSelector<T> : Selector<T> where T : MonoBehaviour
+public abstract class ColliderSelector : Selector
 {
-    private Rigidbody Rigidbody;
+    private Rigidbody body;
 
     [DataMember]
-    private List<T> targets = new List<T>();
+    private List<Actor> targets = new List<Actor>();
 
-    public override IEnumerator<T> GetEnumerator() => targets.GetEnumerator();
+    public sealed override IEnumerable<Actor> Targets => targets.AsReadOnly();
+
+    public Vector3 Aim => Owner.Aim;
 
     private void Start()
     {
-        Rigidbody = GetComponent<Rigidbody>();
-        if (Rigidbody == null)
+        body = GetComponent<Rigidbody>();
+        if (body == null)
         {
-            Rigidbody = gameObject.AddComponent<Rigidbody>();
-            Rigidbody.isKinematic = true;
+            body = gameObject.AddComponent<Rigidbody>();
+            body.isKinematic = true;
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        foreach (T target in other.GetComponents<T>())
+        foreach (Actor target in other.GetComponents<Actor>())
         {
             targets.Add(target);
         }
@@ -32,7 +34,7 @@ public abstract class ColliderSelector<T> : Selector<T> where T : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        foreach (T target in other.GetComponents<T>())
+        foreach (Actor target in other.GetComponents<Actor>())
         {
             targets.Remove(target);
         }
