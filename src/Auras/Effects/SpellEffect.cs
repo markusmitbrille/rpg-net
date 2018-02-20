@@ -1,4 +1,6 @@
 ﻿using Autrage.LEX.NET.Serialization;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 [DataContract]
@@ -8,12 +10,22 @@ public class SpellEffect : Effect
     [DataMember]
     private Aura prefab;
 
+    [SerializeField]
     [DataMember]
-    private Aura child;
+    private ActorSelector selector;
 
-    public override string Description => $"Applies {prefab} to {Target} on completion.";
+    [DataMember]
+    private List<Aura> children = new List<Aura>();
 
-    public override void OnCompletion() => child = Owner.SendSpell(Aura.Origin, Aura, Target, prefab);
+    public override string Description => $"Applies {prefab} to {selector} on completion.";
 
-    public override bool CanDestroy() => child == null;
+    public override void OnCompletion()
+    {
+        foreach (Actor target in selector)
+        {
+            children.Add(Owner.SendSpell(Aura.Origin, Aura, target, prefab));
+        }
+    }
+
+    public override bool CanDestroy() => children.All(child => child == null);
 }
