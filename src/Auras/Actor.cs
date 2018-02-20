@@ -1,6 +1,7 @@
 ﻿using Autrage.LEX.NET;
 using Autrage.LEX.NET.Serialization;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -111,7 +112,7 @@ public abstract class Actor : MonoBehaviour
     public abstract Actor Target { get; }
     public abstract Vector3 Aim { get; }
 
-    public Aura[] Auras => auras ?? (auras = GetComponentsInChildren<Aura>());
+    public IEnumerable<Aura> Auras => auras ?? (auras = GetComponentsInChildren<Aura>());
 
     public event EventHandler<PackageEventArgs> SendingPackage;
     public event EventHandler<ReportEventArgs> SentPackage;

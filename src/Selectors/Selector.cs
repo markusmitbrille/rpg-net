@@ -42,15 +42,12 @@ public abstract class Selector : MonoBehaviour, IEnumerable<Actor>, IEnumerable
 
     IEnumerator IEnumerable.GetEnumerator() => Targets.GetEnumerator();
 
-    private void Update()
+    private void Start()
     {
-        // Refresh owner once per tick
-        owner = null;
-
-        // Destroy if no owner was found to avoid orphaned selectors
+        // Self-destruct if no owner was found to avoid orphaned selectors
         if (Owner == null)
         {
-            Warning($"Could not get owner of {this}!");
+            Error($"Could not get owner of {this}!");
             Destroy(this);
             return;
         }

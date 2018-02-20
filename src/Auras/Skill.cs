@@ -1,5 +1,6 @@
 ﻿using Autrage.LEX.NET.Serialization;
 using UnityEngine;
+using static Autrage.LEX.NET.Bugger;
 
 [DataContract]
 public class Skill : MonoBehaviour
@@ -39,18 +40,19 @@ public class Skill : MonoBehaviour
         return Owner.SendSpell(this, null, Owner, active);
     }
 
-    private void Update()
+    private void Start()
     {
-        // Refresh owner once per tick
-        owner = null;
-
-        // Destroy if no owner was found to avoid orphaned skills
+        // Self-destruct if no owner was found to avoid orphaned skills
         if (Owner == null)
         {
+            Error($"Could not get owner of {this}!");
             Destroy(this);
             return;
         }
+    }
 
+    private void Update()
+    {
         if (Cooldown > 0f)
         {
             Cooldown -= Time.deltaTime;

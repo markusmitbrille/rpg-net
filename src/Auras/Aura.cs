@@ -1,4 +1,5 @@
 ﻿using Autrage.LEX.NET.Serialization;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using static Autrage.LEX.NET.Bugger;
@@ -62,12 +63,39 @@ public class Aura : MonoBehaviour
     public string Name => name;
     public string Summary => summary;
     public string Flavour => flavour;
-    public string Description => ComposeDescription();
+
+    public string Description
+    {
+        get
+        {
+            // Create string builder for performant string concatenation
+            StringBuilder description = new StringBuilder(summary);
+
+            foreach (Effect effect in Effects)
+            {
+                // Append the seperator with blank lines before and after
+                description.AppendLine().AppendLine(DescriptionSeperator).AppendLine();
+
+                // Append the effect's description
+                description.Append(effect.Description);
+            }
+
+            if (!string.IsNullOrEmpty(flavour) && !string.IsNullOrWhiteSpace(flavour))
+            {
+                // Append the seperator with blank lines before and after
+                description.AppendLine().AppendLine(DescriptionSeperator).AppendLine();
+
+                // Append the ability's flavour text
+                description.AppendLine(flavour);
+            }
+
+            return description.ToString();
+        }
+    }
 
     public bool IsFailing => isFailing;
     public bool HasConcluded => hasConcluded;
-
-    public Aura Instantiate(Actor actor, Skill origin, Aura source) => Instantiate(this, actor.transform, source);
+    public bool CanDestroy => HasConcluded && Effects.All(effect => effect.CanDestroy());
 
     public void Fail() => isFailing = true;
 
@@ -79,50 +107,33 @@ public class Aura : MonoBehaviour
 
     public override string ToString() => name;
 
-    private string ComposeDescription()
+    public Aura Instantiate(Actor actor, Skill origin, Aura source)
     {
-        // Create string builder for performant string concatenation
-        StringBuilder description = new StringBuilder(summary);
-
-        foreach (Effect effect in Effects)
-        {
-            // Append the seperator with blank lines before and after
-            description.AppendLine().AppendLine(DescriptionSeperator).AppendLine();
-
-            // Append the effect's description
-            description.Append(effect.Description);
-        }
-
-        if (!string.IsNullOrEmpty(flavour) && !string.IsNullOrWhiteSpace(flavour))
-        {
-            // Append the seperator with blank lines before and after
-            description.AppendLine().AppendLine(DescriptionSeperator).AppendLine();
-
-            // Append the ability's flavour text
-            description.AppendLine(flavour);
-        }
-
-        return description.ToString();
+        Aura aura = Instantiate(this, actor.transform, source);
+        aura.Apply();
+        return aura;
     }
 
     private void Start()
     {
-        // Conclude if no effects were found to avoid dead auras
+        // Self-destruct if no owner was found to avoid orphaned auras
+        if (Owner == null)
+        {
+            Error($"Could not get owner of {this}!");
+            Destroy(this);
+            return;
+        }
+        // Self-destruct if no effects were found to avoid dead auras
         if (Effects.Length == 0)
         {
             Warning($"No effects found on {this}!");
-            Conclude();
+            Destroy(this);
             return;
         }
+    }
 
-        // Conclude if no owner was found to avoid orphaned auras
-        if (Owner == null)
-        {
-            Warning($"Could not get owner of {this}!");
-            Conclude();
-            return;
-        }
-
+    private void Apply()
+    {
         // Pre-application stage
         Effect.StageResults preApplicationResults = Effect.StageResults.None;
         foreach (Effect effect in Effects)
@@ -162,26 +173,6 @@ public class Aura : MonoBehaviour
 
     private void Update()
     {
-        // Refresh owner and effects once per tick
-        owner = null;
-        effects = null;
-
-        // Conclude if no effects were found to avoid dead auras
-        if (Effects.Length == 0)
-        {
-            Warning($"No effects found on {this}!");
-            Conclude();
-            return;
-        }
-
-        // Conclude if no owner was found to avoid orphaned auras
-        if (Owner == null)
-        {
-            Warning($"Could not get owner of {this}!");
-            Conclude();
-            return;
-        }
-
         // Check for failure
         if (isFailing)
         {
@@ -191,7 +182,7 @@ public class Aura : MonoBehaviour
         }
 
         // Destroy concluded aura when ready
-        if (CanDestroy())
+        if (CanDestroy)
         {
             Destroy(gameObject);
             return;
@@ -266,23 +257,5 @@ public class Aura : MonoBehaviour
         }
 
         hasConcluded = true;
-    }
-
-    private bool CanDestroy()
-    {
-        if (!hasConcluded)
-        {
-            return false;
-        }
-
-        foreach (Effect effect in Effects)
-        {
-            if (!effect.CanDestroy())
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 }

@@ -45,24 +45,20 @@ public abstract class Effect : MonoBehaviour
 
     public virtual bool CanDestroy() => true;
 
-    private void Update()
+    private void Start()
     {
-        // Refresh owner and aura once per tick
-        owner = null;
-        aura = null;
-
-        // Destroy if no owner was found to avoid orphaned effects
+        // Self-destruct if no owner was found to avoid orphaned effects
         if (Owner == null)
         {
-            Warning($"Could not get owner of {this}!");
+            Error($"Could not get owner of {this}!");
             Destroy(this);
             return;
         }
 
-        // Destroy if no aura was found to avoid dead effects
+        // Self-destruct if no aura was found to avoid orphaned effects
         if (Aura == null)
         {
-            Warning($"Could not get aura of {this}!");
+            Error($"Could not get aura of {this}!");
             Destroy(this);
             return;
         }
