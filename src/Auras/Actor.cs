@@ -2,6 +2,7 @@
 using Autrage.LEX.NET.Serialization;
 using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 [DisallowMultipleComponent]
 [DataContract]
@@ -108,7 +109,7 @@ public abstract class Actor : MonoBehaviour
     public bool IsInCombat { get; set; }
 
     public abstract Actor Target { get; }
-    public abstract Vector3  Aim { get; }
+    public abstract Vector3 Aim { get; }
 
     public Aura[] Auras => auras ?? (auras = GetComponentsInChildren<Aura>());
 
@@ -119,6 +120,8 @@ public abstract class Actor : MonoBehaviour
     public event EventHandler<ReportEventArgs> ReceivedPackage;
 
     public override string ToString() => name;
+
+    public void ConfirmSelection() => ExecuteEvents.Execute<IConfirmSelectionTarget>(gameObject, null, (target, data) => target.ConfirmSelection());
 
     public bool SendDamage(Skill origin, Aura source, Actor receiver, DamageType type, float amount) => SendPackage(new Damage(origin, source, this) { Receiver = receiver, Type = type, Amount = amount });
 
