@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 public enum DamageCategory
 {
-    None,
     Damage,
     Physical,
     Blunt,
@@ -24,17 +23,13 @@ public static class DamageCategoryExtensions
 {
     private static Dictionary<DamageCategory /* child */, DamageCategory /* parent */> immediateParents = new Dictionary<DamageCategory, DamageCategory>()
         {
-            { DamageCategory.Damage, DamageCategory.None },
-            { DamageCategory.Physical, DamageCategory.Damage },
             { DamageCategory.Blunt, DamageCategory.Physical },
             { DamageCategory.Piercing, DamageCategory.Physical },
             { DamageCategory.Cutting, DamageCategory.Physical },
-            { DamageCategory.Elemental, DamageCategory.Damage },
             { DamageCategory.Heat, DamageCategory.Elemental },
             { DamageCategory.Frost, DamageCategory.Elemental },
             { DamageCategory.Corrosive, DamageCategory.Elemental },
             { DamageCategory.Galvanic, DamageCategory.Elemental },
-            { DamageCategory.Psychological, DamageCategory.Damage },
             { DamageCategory.Trauma, DamageCategory.Psychological },
             { DamageCategory.Chaos, DamageCategory.Psychological },
             { DamageCategory.Fatigue, DamageCategory.Psychological },
@@ -47,11 +42,13 @@ public static class DamageCategoryExtensions
         // Build all parents
         foreach (DamageCategory root in immediateParents.Keys)
         {
-            allParents[root] = new List<DamageCategory>();
-            for (DamageCategory parent = immediateParents.GetValueOrDefault(root); parent != DamageCategory.None; parent = immediateParents.GetValueOrDefault(parent))
+            List<DamageCategory> parents = new List<DamageCategory>() { DamageCategory.Damage };
+            for (DamageCategory parent = immediateParents.GetValueOrDefault(root); parent != default(DamageCategory) && !parents.Contains(parent); parent = immediateParents.GetValueOrDefault(parent))
             {
-                allParents[root].Add(parent);
+                parents.Add(parent);
             }
+
+            allParents[root] = parents;
         }
     }
 

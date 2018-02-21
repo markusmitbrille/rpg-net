@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 public enum AuraCategory
 {
-    None,
     Aura,
     Skill,
     Attack,
@@ -23,8 +22,6 @@ public static class AuraCategoryExtensions
 {
     private static Dictionary<AuraCategory /* child */, AuraCategory /* parent */> immediateParents = new Dictionary<AuraCategory, AuraCategory>()
         {
-            { AuraCategory.Aura, AuraCategory.None },
-            { AuraCategory.Skill, AuraCategory.Aura },
             { AuraCategory.Attack, AuraCategory.Skill },
             { AuraCategory.Spell, AuraCategory.Skill },
             { AuraCategory.Invocation, AuraCategory.Spell },
@@ -45,11 +42,13 @@ public static class AuraCategoryExtensions
         // Build all parents
         foreach (AuraCategory root in immediateParents.Keys)
         {
-            allParents[root] = new List<AuraCategory>();
-            for (AuraCategory parent = immediateParents.GetValueOrDefault(root); parent != AuraCategory.None; parent = immediateParents.GetValueOrDefault(parent))
+            List<AuraCategory> parents = new List<AuraCategory>() { default(AuraCategory) };
+            for (AuraCategory parent = immediateParents.GetValueOrDefault(root); parent != default(AuraCategory) && !parents.Contains(parent); parent = immediateParents.GetValueOrDefault(parent))
             {
-                allParents[root].Add(parent);
+                parents.Add(parent);
             }
+
+            allParents[root] = parents;
         }
     }
 
