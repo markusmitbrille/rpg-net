@@ -9,6 +9,11 @@ using UnityEngine.EventSystems;
 [DataContract]
 public abstract class Actor : MonoBehaviour
 {
+    [Auto]
+    [SerializeField]
+    [DataMember]
+    private int id;
+
     [Header("Primary Attributes")]
     [SerializeField]
     [DataMember]
@@ -77,6 +82,8 @@ public abstract class Actor : MonoBehaviour
     private IEnumerable<Aura> auras;
     private IEnumerable<Skill> skills;
     private IEnumerable<Equipment> equipment;
+
+    public int ID => id;
 
     public ComplexStat Might => might;
     public ComplexStat Armour => armour;
