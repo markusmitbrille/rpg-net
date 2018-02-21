@@ -1,7 +1,12 @@
 ﻿using Autrage.LEX.NET.Serialization;
 using System;
-using UnityEditor;
 using UnityEngine;
+
+#if UNITY_EDITOR
+
+using UnityEditor;
+
+#endif
 
 [Serializable]
 [DataContract]
@@ -64,6 +69,8 @@ public class ComplexStat : Stat
         Max = defaultMax;
     }
 
+#if UNITY_EDITOR
+
     [CustomPropertyDrawer(typeof(ComplexStat))]
     public class ComplexStatDrawer : PropertyDrawer
     {
@@ -125,4 +132,6 @@ public class ComplexStat : Stat
             EditorGUI.EndProperty();
         }
     }
+
+#endif
 }
