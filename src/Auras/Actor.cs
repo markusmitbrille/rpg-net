@@ -135,7 +135,7 @@ public abstract class Actor : MonoBehaviour
 
     public void ConfirmSelection() => ExecuteEvents.Execute<IConfirmSelectionTarget>(gameObject, null, (target, data) => target.ConfirmSelection());
 
-    public bool SendDamage(Skill origin, Aura source, Actor receiver, DamageCategory category, float amount) => SendPackage(new Damage(origin, source, this) { Receiver = receiver, Category = category, Amount = amount });
+    public bool SendAttack(Skill origin, Aura source, Actor receiver, Damage damage) => SendPackage(new Attack(origin, source, this) { Receiver = receiver, Damage = damage });
 
     public Aura SendSpell(Skill origin, Aura source, Actor receiver, Aura prefab) => SendPackage(new Spell(origin, source, this) { Receiver = receiver, Prefab = prefab });
 
