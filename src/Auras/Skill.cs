@@ -31,6 +31,8 @@ public class Skill : MonoBehaviour
     public bool HasActive => active != null;
     public bool HasPassive => passive != null;
 
+    public bool Is(AuraCategory category) => (active?.Is(category) ?? false) || (passive?.Is(category) ?? false);
+
     public Aura Use()
     {
         if (!enabled)

@@ -14,6 +14,10 @@ public class Equipment : MonoBehaviour
 
     [SerializeField]
     [DataMember]
+    private EquipmentCategory category;
+
+    [SerializeField]
+    [DataMember]
     private Aura equip;
 
     [SerializeField]
@@ -21,6 +25,8 @@ public class Equipment : MonoBehaviour
     private Aura unequip;
 
     public Actor Owner => owner ?? (owner = GetComponent<Actor>());
+
+    public bool Is(EquipmentCategory category) => this.category.Is(category);
 
     public Equipment Equip(Actor actor)
     {
