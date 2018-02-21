@@ -28,6 +28,11 @@ public class Skill : MonoBehaviour
 
     public Aura Use()
     {
+        if (!enabled)
+        {
+            return null;
+        }
+
         if (!HasActive)
         {
             return null;
