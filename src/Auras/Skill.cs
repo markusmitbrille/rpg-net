@@ -54,6 +54,8 @@ public class Skill : MonoBehaviour
             Destroy(this);
             return;
         }
+
+        UsePassive();
     }
 
     private void Update()
@@ -76,6 +78,11 @@ public class Skill : MonoBehaviour
 
     private void UsePassive()
     {
+        if (Cooldown > 0f)
+        {
+            return;
+        }
+
         if (HasPassive)
         {
             Owner.SendSpell(this, null, Owner, passive);
