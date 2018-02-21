@@ -1,6 +1,6 @@
 ﻿public class Damage : Package<bool>
 {
-    public DamageType Type { get; set; }
+    public DamageCategory Category { get; set; }
     public float Amount { get; set; }
 
     public bool IsDamage => Amount > 0f;
@@ -18,6 +18,6 @@
         Receiver.Life.Set(Receiver.Life - Amount);
 
         float actual = old - Receiver.Life;
-        return new DamageReport(Origin, Source, Sender, Receiver, actual != 0f, Type, actual);
+        return new DamageReport(Origin, Source, Sender, Receiver, actual != 0f, Category, actual);
     }
 }

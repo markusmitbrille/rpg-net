@@ -31,7 +31,7 @@ public class Aura : MonoBehaviour
 
     [SerializeField]
     [DataMember]
-    private AuraType type;
+    private AuraCategory category;
 
     [Header("Description")]
     [TextArea]
@@ -70,7 +70,7 @@ public class Aura : MonoBehaviour
 
     public int ID => id;
     public AuraTags Tags => tags;
-    public AuraType Type => type;
+    public AuraCategory Category => category;
 
     public string Name => name;
     public string Summary => summary;
@@ -117,7 +117,7 @@ public class Aura : MonoBehaviour
 
     public void PreventFail() => isFailing = false;
 
-    public bool Is(AuraType type) => this.type.Is(type);
+    public bool Is(AuraCategory category) => this.category.Is(category);
 
     public bool Is(AuraTags tags) => this.tags.HasFlag(tags);
 
