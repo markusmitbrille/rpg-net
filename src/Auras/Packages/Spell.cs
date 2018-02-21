@@ -10,7 +10,7 @@
 
     public override Report<Aura> Unwrap()
     {
-        Aura content = Prefab.Instantiate(Receiver, Origin, Source);
+        Aura content = Prefab.Create(Receiver, Origin, Source);
         return new SpellReport(Origin, Source, Sender, Receiver, content, Prefab);
     }
 }

@@ -123,7 +123,21 @@ public class Aura : MonoBehaviour
 
     public override string ToString() => name;
 
-    public Aura Instantiate(Actor actor, Skill origin, Aura source) => Instantiate(this, actor.transform, source);
+    public Aura Create(Actor actor, Skill origin, Aura source)
+    {
+        GameObject auraGameObject = Instantiate(gameObject, actor.transform);
+        Aura aura = auraGameObject.GetComponents<Aura>().SingleOrDefault();
+        if (aura == null)
+        {
+            Error($"Multiple instances of {nameof(Aura)} found on {auraGameObject}!");
+            Destroy(auraGameObject);
+            return null;
+        }
+
+        aura.origin = origin;
+        aura.source = source;
+        return aura;
+    }
 
     private void Start()
     {
