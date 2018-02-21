@@ -55,15 +55,22 @@ public class Skill : MonoBehaviour
     {
         if (Cooldown > 0f)
         {
-            Cooldown -= Time.deltaTime;
+            ReduceCooldown();
         }
-        if (Cooldown > 0f)
+    }
+
+    private void ReduceCooldown()
+    {
+        Cooldown -= Time.deltaTime;
+        if (Cooldown <= 0f)
         {
-            return;
+            Cooldown = 0f;
+            UsePassive();
         }
+    }
 
-        Cooldown = 0f;
-
+    private void UsePassive()
+    {
         if (HasPassive)
         {
             Owner.SendSpell(this, null, Owner, passive);

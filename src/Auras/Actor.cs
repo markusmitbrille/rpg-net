@@ -74,7 +74,8 @@ public abstract class Actor : MonoBehaviour
     [DataMember]
     private ComplexStat outOfCombatRegenIterations = new ComplexStat();
 
-    private Aura[] auras;
+    private IEnumerable<Aura> auras;
+    private IEnumerable<Skill> skills;
 
     public ComplexStat Might => might;
     public ComplexStat Armour => armour;
@@ -113,6 +114,7 @@ public abstract class Actor : MonoBehaviour
     public abstract Vector3 Aim { get; }
 
     public IEnumerable<Aura> Auras => auras ?? (auras = GetComponentsInChildren<Aura>());
+    public IEnumerable<Skill> Skils => skills ?? (skills = GetComponents<Skill>());
 
     public event EventHandler<PackageEventArgs> SendingPackage;
     public event EventHandler<ReportEventArgs> SentPackage;
@@ -174,6 +176,9 @@ public abstract class Actor : MonoBehaviour
     {
         // Refresh auras once per tick
         auras = null;
+
+        // Refresh skills once per tick
+        skills = null;
 
         RegenerateResources();
     }
