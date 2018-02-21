@@ -7,8 +7,8 @@ public class Equipment : MonoBehaviour
 {
     private Actor owner;
 
+    [Auto]
     [SerializeField]
-    [ReadOnly]
     [DataMember]
     private int id;
 
@@ -23,6 +23,8 @@ public class Equipment : MonoBehaviour
     [SerializeField]
     [DataMember]
     private Aura unequip;
+
+    public int ID => id;
 
     public Actor Owner => owner ?? (owner = GetComponent<Actor>());
 

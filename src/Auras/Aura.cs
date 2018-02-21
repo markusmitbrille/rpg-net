@@ -19,8 +19,8 @@ public class Aura : MonoBehaviour
     private Actor owner;
     private Effect[] effects;
 
+    [Auto]
     [SerializeField]
-    [ReadOnly]
     [DataMember]
     private int id;
 

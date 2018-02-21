@@ -7,8 +7,8 @@ public class Skill : MonoBehaviour
 {
     private Actor owner;
 
+    [Auto]
     [SerializeField]
-    [ReadOnly]
     [DataMember]
     private int id;
 
@@ -22,6 +22,8 @@ public class Skill : MonoBehaviour
 
     [DataMember]
     public float Cooldown { get; set; }
+
+    public int ID => id;
 
     public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
 
