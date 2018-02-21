@@ -76,6 +76,7 @@ public abstract class Actor : MonoBehaviour
 
     private IEnumerable<Aura> auras;
     private IEnumerable<Skill> skills;
+    private IEnumerable<Equipment> equipment;
 
     public ComplexStat Might => might;
     public ComplexStat Armour => armour;
@@ -114,7 +115,8 @@ public abstract class Actor : MonoBehaviour
     public abstract Vector3 Aim { get; }
 
     public IEnumerable<Aura> Auras => auras ?? (auras = GetComponentsInChildren<Aura>());
-    public IEnumerable<Skill> Skils => skills ?? (skills = GetComponents<Skill>());
+    public IEnumerable<Skill> Skils => skills ?? (skills = GetComponentsInChildren<Skill>());
+    public IEnumerable<Equipment> Equipment => equipment ?? (equipment = GetComponents<Equipment>());
 
     public event EventHandler<PackageEventArgs> SendingPackage;
     public event EventHandler<ReportEventArgs> SentPackage;
@@ -179,6 +181,9 @@ public abstract class Actor : MonoBehaviour
 
         // Refresh skills once per tick
         skills = null;
+
+        // Refresh equipment once per tick
+        equipment = null;
 
         RegenerateResources();
     }

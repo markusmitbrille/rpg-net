@@ -18,7 +18,7 @@ public class Skill : MonoBehaviour
     [DataMember]
     public float Cooldown { get; set; }
 
-    public Actor Owner => owner ?? (owner = GetComponent<Actor>());
+    public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
 
     public Aura Active => active;
     public Aura Passive => passive;
