@@ -8,6 +8,11 @@ public class Equipment : MonoBehaviour
     private Actor owner;
 
     [SerializeField]
+    [ReadOnly]
+    [DataMember]
+    private int id;
+
+    [SerializeField]
     [DataMember]
     private Aura equip;
 
