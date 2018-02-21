@@ -48,7 +48,19 @@ public class Aura : MonoBehaviour
     private bool isFailing;
 
     [DataMember]
-    private bool hasConcluded;
+    private bool isApplied;
+
+    [DataMember]
+    private bool isCompleted;
+
+    [DataMember]
+    private bool isFailed;
+
+    [DataMember]
+    private bool isTerminated;
+
+    [DataMember]
+    private bool isConcluded;
 
     public Skill Origin => origin;
     public Aura Source => source;
@@ -94,8 +106,12 @@ public class Aura : MonoBehaviour
     }
 
     public bool IsFailing => isFailing;
-    public bool HasConcluded => hasConcluded;
-    public bool CanDestroy => HasConcluded && Effects.All(effect => effect.CanDestroy());
+    public bool IsApplied => isApplied;
+    public bool IsCompleted => isCompleted;
+    public bool IsFailed => isFailed;
+    public bool IsTerminated => isTerminated;
+    public bool IsConcluded => isConcluded;
+    public bool CanDestroy => IsConcluded && Effects.All(effect => effect.CanDestroy());
 
     public void Fail() => isFailing = true;
 
@@ -107,12 +123,7 @@ public class Aura : MonoBehaviour
 
     public override string ToString() => name;
 
-    public Aura Instantiate(Actor actor, Skill origin, Aura source)
-    {
-        Aura aura = Instantiate(this, actor.transform, source);
-        aura.Apply();
-        return aura;
-    }
+    public Aura Instantiate(Actor actor, Skill origin, Aura source) => Instantiate(this, actor.transform, source);
 
     private void Start()
     {
@@ -130,17 +141,21 @@ public class Aura : MonoBehaviour
             Destroy(this);
             return;
         }
+
+        Apply();
     }
 
     private void Apply()
     {
-        // Pre-application stage
-        Effect.StageResults preApplicationResults = Effect.StageResults.None;
-        foreach (Effect effect in Effects)
+        if (isApplied)
         {
-            preApplicationResults |= effect.OnPreApplication();
+            return;
         }
 
+        isApplied = true;
+
+        // Pre-application stage
+        Effect.StageResults preApplicationResults = Effects.Aggregate(Effect.StageResults.None, (res, effect) => res | effect.OnPreApplication());
         if (preApplicationResults.HasFlag(Effect.StageResults.Failed))
         {
             Failure();
@@ -153,12 +168,7 @@ public class Aura : MonoBehaviour
         }
 
         // Application stage
-        Effect.StageResults applicationResults = Effect.StageResults.None;
-        foreach (Effect effect in Effects)
-        {
-            applicationResults |= effect.OnApplication();
-        }
-
+        Effect.StageResults applicationResults = Effects.Aggregate(Effect.StageResults.None, (res, effect) => res | effect.OnApplication());
         if (applicationResults.HasFlag(Effect.StageResults.Failed))
         {
             Failure();
@@ -189,12 +199,7 @@ public class Aura : MonoBehaviour
         }
 
         // Pre-update stage
-        Effect.StageResults preUpdateResults = Effect.StageResults.None;
-        foreach (Effect effect in Effects)
-        {
-            preUpdateResults |= effect.OnPreUpdate();
-        }
-
+        Effect.StageResults preUpdateResults = Effects.Aggregate(Effect.StageResults.None, (res, effect) => res | effect.OnPreUpdate());
         if (preUpdateResults.HasFlag(Effect.StageResults.Failed))
         {
             Failure();
@@ -207,12 +212,7 @@ public class Aura : MonoBehaviour
         }
 
         // Update stage
-        Effect.StageResults updateResults = Effect.StageResults.None;
-        foreach (Effect effect in Effects)
-        {
-            updateResults |= effect.OnUpdate();
-        }
-
+        Effect.StageResults updateResults = Effects.Aggregate(Effect.StageResults.None, (res, effect) => res | effect.OnUpdate());
         if (updateResults.HasFlag(Effect.StageResults.Failed))
         {
             Failure();
@@ -227,35 +227,67 @@ public class Aura : MonoBehaviour
 
     private void Complete()
     {
+        if (isCompleted)
+        {
+            return;
+        }
+
+        isCompleted = true;
+
         foreach (Effect effect in Effects)
         {
             effect.OnCompletion();
         }
+
+        Conclude();
     }
 
     private void Terminate()
     {
+        if (isTerminated)
+        {
+            return;
+        }
+
+        isTerminated = true;
+
         foreach (Effect effect in Effects)
         {
             effect.OnTermination();
         }
+
+        Conclude();
     }
 
     private void Failure()
     {
+        if (isFailed)
+        {
+            return;
+        }
+
+        isFailed = true;
+
         foreach (Effect effect in Effects)
         {
             effect.OnFailure();
         }
+
+        Conclude();
     }
 
     private void Conclude()
     {
+        if (isConcluded)
+        {
+            return;
+        }
+
+        isConcluded = true;
+
         foreach (Effect effect in Effects)
         {
             effect.OnConclusion();
         }
-
-        hasConcluded = true;
     }
 }
