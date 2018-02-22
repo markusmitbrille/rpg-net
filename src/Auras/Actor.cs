@@ -1,36 +1,26 @@
-﻿using Autrage.LEX.NET;
-using Autrage.LEX.NET.Serialization;
+﻿using Autrage.LEX.NET.Serialization;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 [DisallowMultipleComponent]
 [DataContract]
-public abstract class Actor : MonoBehaviour
+public abstract class Actor : MonoBehaviour,    IIdentifiable<ActorInfo>
 {
-    [Auto]
     [SerializeField]
     [DataMember]
-    private int id;
+    private ActorInfo id;
 
-    private IEnumerable<Aura> auras;
-    private IEnumerable<Skill> skills;
-    private IEnumerable<Equipment> equipment;
-    private IEnumerable<Stat> stats;
+    public ActorInfo ID => id;
 
-    public int ID => id;
+    public IdentifiableCollection<AuraInfo, Aura> Auras { get; private set; }
+    public IdentifiableCollection<SkillInfo, Skill> Skills { get; private set; }
+    public IdentifiableCollection<EquipmentInfo, Equipment> Equipments { get; private set; }
+    public IdentifiableCollection<StatInfo, Stat> Stats { get; private set; }
 
     public abstract Actor Target { get; }
     public abstract Vector3 Aim { get; }
     public abstract bool IsInCombat { get; }
-
-    public IEnumerable<Aura> Auras => auras ?? (auras = GetComponentsInChildren<Aura>());
-    public IEnumerable<Skill> Skils => skills ?? (skills = GetComponentsInChildren<Skill>());
-    public IEnumerable<Equipment> Equipment => equipment ?? (equipment = GetComponents<Equipment>());
-    public IEnumerable<Stat> Stats => stats ?? (stats = GetComponentsInChildren<Stat>());
-    public IEnumerable<Resource> Resources => Stats.OfType<Resource>();
 
     public event EventHandler<PackageEventArgs> SendingPackage;
     public event EventHandler<ReportEventArgs> SentPackage;
@@ -88,16 +78,12 @@ public abstract class Actor : MonoBehaviour
         return package.Receiver.ReceivePackage(package);
     }
 
-    private void Update()
+    private void Awake()
     {
-        // Refresh auras once per tick
-        auras = null;
-
-        // Refresh skills once per tick
-        skills = null;
-
-        // Refresh equipment once per tick
-        equipment = null;
+        Auras = new IdentifiableCollection<AuraInfo, Aura>();
+        Skills = new IdentifiableCollection<SkillInfo, Skill>();
+        Equipments = new IdentifiableCollection<EquipmentInfo, Equipment>();
+        Stats = new IdentifiableCollection<StatInfo, Stat>();
     }
 
     private T ReceivePackage<T>(Package<T> package)

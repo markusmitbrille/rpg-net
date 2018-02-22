@@ -13,13 +13,11 @@ public class SpellAreaEffect : TargetedEffect
     [DataMember]
     private List<Aura> children = new List<Aura>();
 
-    public override string Description => $"Applies {prefab} to {Targets} on completion.";
-
     public override void OnCompletion()
     {
         foreach (Actor target in Targets)
         {
-            children.Add(Owner.SendSpell(Aura.Origin, Aura, target, prefab));
+            children.Add(Actor.SendSpell(Aura.Origin, Aura, target, prefab));
         }
     }
 

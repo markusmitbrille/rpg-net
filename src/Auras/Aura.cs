@@ -6,7 +6,7 @@ using static Autrage.LEX.NET.Bugger;
 
 [DisallowMultipleComponent]
 [DataContract]
-public class Aura : MonoBehaviour
+public class Aura : MonoBehaviour, IIdentifiable<AuraInfo>
 {
     private const string DescriptionSeperator = "---";
 
@@ -15,13 +15,13 @@ public class Aura : MonoBehaviour
     private AuraInfo info;
 
     [DataMember]
+    private Actor actor;
+
+    [DataMember]
     private Skill origin;
 
     [DataMember]
     private Aura source;
-
-    private Actor owner;
-    private Effect[] effects;
 
     [DataMember]
     private bool isFailing;
@@ -42,12 +42,12 @@ public class Aura : MonoBehaviour
     private bool isConcluded;
 
     public AuraInfo Info => info;
+    public Actor Actor => actor ?? (actor = GetComponentInParent<Actor>());
+
+    public IdentifiableCollection<EffectInfo, Effect> Effects { get; private set; }
 
     public Skill Origin => origin;
     public Aura Source => source;
-
-    public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
-    public Effect[] Effects => effects ?? (effects = GetComponents<Effect>());
 
     public bool IsFailing => isFailing;
     public bool IsApplied => isApplied;
@@ -56,6 +56,8 @@ public class Aura : MonoBehaviour
     public bool IsTerminated => isTerminated;
     public bool IsConcluded => isConcluded;
     public bool CanDestroy => IsConcluded && Effects.All(effect => effect.CanDestroy());
+
+    AuraInfo IIdentifiable<AuraInfo>.ID => Info;
 
     public void Fail() => isFailing = true;
 
@@ -78,7 +80,7 @@ public class Aura : MonoBehaviour
             description.AppendLine().AppendLine(DescriptionSeperator).AppendLine();
 
             // Append the effect's description
-            description.Append(effect.Description);
+            description.Append(info.Description);
         }
 
         if (!string.IsNullOrEmpty(info.Flavour) && !string.IsNullOrWhiteSpace(info.Flavour))
@@ -109,17 +111,23 @@ public class Aura : MonoBehaviour
         return aura;
     }
 
+    private void Awake()
+    {
+        Effects = new IdentifiableCollection<EffectInfo, Effect>();
+    }
+
     private void Start()
     {
         // Self-destruct if no owner was found to avoid orphaned auras
-        if (Owner == null)
+        if (Actor == null)
         {
             Error($"Could not get owner of {this}!");
             Destroy(this);
             return;
         }
+
         // Self-destruct if no effects were found to avoid dead auras
-        if (Effects.Length == 0)
+        if (Effects.Count == 0)
         {
             Warning($"No effects found on {this}!");
             Destroy(this);
@@ -127,6 +135,10 @@ public class Aura : MonoBehaviour
         }
 
         Apply();
+    }
+
+    private void OnEnable()
+    {
     }
 
     private void Apply()

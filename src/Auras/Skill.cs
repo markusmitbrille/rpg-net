@@ -3,20 +3,22 @@ using UnityEngine;
 using static Autrage.LEX.NET.Bugger;
 
 [DataContract]
-public class Skill : MonoBehaviour
+public class Skill : MonoBehaviour, IIdentifiable<SkillInfo>
 {
     [SerializeField]
     [DataMember]
-    private SkillInfo info;
+    public SkillInfo info;
 
-    private Actor owner;
+    [DataMember]
+    private Actor actor;
 
     public SkillInfo Info => info;
-
-    public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
+    public Actor Actor => actor ?? (actor = GetComponentInParent<Actor>());
 
     [DataMember]
     public float Cooldown { get; set; }
+
+    SkillInfo IIdentifiable<SkillInfo>.ID => Info;
 
     public bool Is(AuraCategory category) => (info.Active?.Is(category) ?? false) || (info.Passive?.Is(category) ?? false);
 
@@ -35,13 +37,13 @@ public class Skill : MonoBehaviour
             return null;
         }
 
-        return Owner.SendSpell(this, null, Owner, info.Active);
+        return Actor.SendSpell(this, null, Actor, info.Active);
     }
 
     private void Start()
     {
         // Self-destruct if no owner was found to avoid orphaned skills
-        if (Owner == null)
+        if (Actor == null)
         {
             Error($"Could not get owner of {this}!");
             Destroy(this);
@@ -84,6 +86,6 @@ public class Skill : MonoBehaviour
             return;
         }
 
-        Owner.SendSpell(this, null, Owner, info.Passive);
+        Actor.SendSpell(this, null, Actor, info.Passive);
     }
 }

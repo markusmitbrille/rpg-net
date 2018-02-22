@@ -6,11 +6,6 @@ public class LuaEffect : Effect
 {
     private const string defaultChunkName = "Lua Effect Script";
 
-    [TextArea]
-    [SerializeField]
-    [DataMember]
-    private string description = "";
-
     [SerializeField]
     [DataMember]
     private string chunkName = defaultChunkName;
@@ -54,8 +49,6 @@ public class LuaEffect : Effect
     [SerializeField]
     [DataMember]
     private string onConclusion = "";
-
-    public override string Description => description;
 
     public override StageResults OnPreApplication()
     {

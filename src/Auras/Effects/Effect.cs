@@ -4,20 +4,23 @@ using UnityEngine;
 using static Autrage.LEX.NET.Bugger;
 
 [DataContract]
-public abstract class Effect : MonoBehaviour
+public abstract class Effect : MonoBehaviour, IIdentifiable<EffectInfo>
 {
     [SerializeField]
-    [ReadOnly]
     [DataMember]
-    private int id;
+    private EffectInfo info;
 
+    [DataMember]
     private Aura aura;
-    private Actor owner;
 
-    public abstract string Description { get; }
+    [DataMember]
+    private Actor actor;
 
+    public EffectInfo Info => info;
     public Aura Aura => aura ?? (aura = GetComponent<Aura>());
-    public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
+    public Actor Actor => actor ?? (actor = GetComponentInParent<Actor>());
+
+    EffectInfo IIdentifiable<EffectInfo>.ID => Info;
 
     public virtual StageResults OnPreApplication() => StageResults.None;
 
@@ -47,10 +50,10 @@ public abstract class Effect : MonoBehaviour
 
     private void Start()
     {
-        // Self-destruct if no owner was found to avoid orphaned effects
-        if (Owner == null)
+        // Self-destruct if no actor was found to avoid orphaned effects
+        if (Actor == null)
         {
-            Error($"Could not get owner of {this}!");
+            Error($"Could not get actor of {this}!");
             Destroy(this);
             return;
         }

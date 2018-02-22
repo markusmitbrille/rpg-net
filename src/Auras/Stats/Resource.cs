@@ -61,7 +61,7 @@ public class Resource : Stat
 
     private void Update()
     {
-        if (Owner.IsInCombat)
+        if (Actor.IsInCombat)
         {
             RegenerateCombat();
         }

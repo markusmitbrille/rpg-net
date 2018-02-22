@@ -3,17 +3,19 @@ using UnityEngine;
 using static Autrage.LEX.NET.Bugger;
 
 [DataContract]
-public class Equipment : MonoBehaviour
+public class Equipment : MonoBehaviour, IIdentifiable<EquipmentInfo>
 {
     [SerializeField]
     [DataMember]
     private EquipmentInfo info;
 
-    private Actor owner;
+    [DataMember]
+    private Actor actor;
 
     public EquipmentInfo Info => info;
+    public Actor Actor => actor ?? (actor = GetComponent<Actor>());
 
-    public Actor Owner => owner ?? (owner = GetComponent<Actor>());
+    EquipmentInfo IIdentifiable<EquipmentInfo>.ID => Info;
 
     public bool Is(EquipmentCategory category) => info.Category.Is(category);
 
@@ -28,7 +30,7 @@ public class Equipment : MonoBehaviour
 
         if (info.Equip != null)
         {
-            Owner.SendSpell(null, null, Owner, info.Equip);
+            Actor.SendSpell(null, null, Actor, info.Equip);
         }
 
         return equipment;
@@ -43,7 +45,7 @@ public class Equipment : MonoBehaviour
 
         if (info.Unequip != null)
         {
-            Owner.SendSpell(null, null, Owner, info.Unequip);
+            Actor.SendSpell(null, null, Actor, info.Unequip);
         }
 
         Destroy(this);
@@ -52,7 +54,7 @@ public class Equipment : MonoBehaviour
     private void Start()
     {
         // Self-destruct if no owner was found to avoid orphaned equipments
-        if (Owner == null)
+        if (Actor == null)
         {
             Error($"Could not get owner of {this}!");
             Destroy(this);
