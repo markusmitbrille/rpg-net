@@ -6,11 +6,11 @@ public abstract class Stat : MonoBehaviour
 {
     [SerializeField]
     [DataMember]
-    private Info info;
+    private StatInfo info;
 
     private Actor owner;
 
-    public Info Info => info;
+    public StatInfo Info => info;
 
     public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
 

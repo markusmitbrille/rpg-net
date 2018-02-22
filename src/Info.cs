@@ -1,9 +1,8 @@
 ﻿using Autrage.LEX.NET.Serialization;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Serialization/Info", order = -100)]
 [DataContract]
-public class Info : Identity
+public abstract class Info : Identity
 {
     [SerializeField]
     [DataMember]
