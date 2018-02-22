@@ -5,35 +5,20 @@ using static Autrage.LEX.NET.Bugger;
 [DataContract]
 public class Skill : MonoBehaviour
 {
+    [SerializeField]
+    [DataMember]
+    private SkillInfo info;
+
     private Actor owner;
 
-    [Auto]
-    [SerializeField]
-    [DataMember]
-    private int id;
+    public SkillInfo Info => info;
 
-    [SerializeField]
-    [DataMember]
-    private Aura active;
-
-    [SerializeField]
-    [DataMember]
-    private Aura passive;
+    public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
 
     [DataMember]
     public float Cooldown { get; set; }
 
-    public int ID => id;
-
-    public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
-
-    public Aura Active => active;
-    public Aura Passive => passive;
-
-    public bool HasActive => active != null;
-    public bool HasPassive => passive != null;
-
-    public bool Is(AuraCategory category) => (active?.Is(category) ?? false) || (passive?.Is(category) ?? false);
+    public bool Is(AuraCategory category) => (info.Active?.Is(category) ?? false) || (info.Passive?.Is(category) ?? false);
 
     public Aura Use()
     {
@@ -41,8 +26,7 @@ public class Skill : MonoBehaviour
         {
             return null;
         }
-
-        if (!HasActive)
+        if (info.Active == null)
         {
             return null;
         }
@@ -51,7 +35,7 @@ public class Skill : MonoBehaviour
             return null;
         }
 
-        return Owner.SendSpell(this, null, Owner, active);
+        return Owner.SendSpell(this, null, Owner, info.Active);
     }
 
     private void Start()
@@ -87,14 +71,19 @@ public class Skill : MonoBehaviour
 
     private void UsePassive()
     {
+        if (!enabled)
+        {
+            return;
+        }
+        if (info.Passive == null)
+        {
+            return;
+        }
         if (Cooldown > 0f)
         {
             return;
         }
 
-        if (HasPassive)
-        {
-            Owner.SendSpell(this, null, Owner, passive);
-        }
+        Owner.SendSpell(this, null, Owner, info.Passive);
     }
 }

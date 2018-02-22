@@ -5,30 +5,17 @@ using static Autrage.LEX.NET.Bugger;
 [DataContract]
 public class Equipment : MonoBehaviour
 {
+    [SerializeField]
+    [DataMember]
+    private EquipmentInfo info;
+
     private Actor owner;
 
-    [Auto]
-    [SerializeField]
-    [DataMember]
-    private int id;
-
-    [SerializeField]
-    [DataMember]
-    private EquipmentCategory category;
-
-    [SerializeField]
-    [DataMember]
-    private Aura equip;
-
-    [SerializeField]
-    [DataMember]
-    private Aura unequip;
-
-    public int ID => id;
+    public EquipmentInfo Info => info;
 
     public Actor Owner => owner ?? (owner = GetComponent<Actor>());
 
-    public bool Is(EquipmentCategory category) => this.category.Is(category);
+    public bool Is(EquipmentCategory category) => info.Category.Is(category);
 
     public Equipment Equip(Actor actor)
     {
@@ -39,9 +26,9 @@ public class Equipment : MonoBehaviour
 
         Equipment equipment = Instantiate(this, actor.transform);
 
-        if (equip != null)
+        if (info.Equip != null)
         {
-            Owner.SendSpell(null, null, Owner, equip);
+            Owner.SendSpell(null, null, Owner, info.Equip);
         }
 
         return equipment;
@@ -54,9 +41,9 @@ public class Equipment : MonoBehaviour
             return;
         }
 
-        if (unequip != null)
+        if (info.Unequip != null)
         {
-            Owner.SendSpell(null, null, Owner, unequip);
+            Owner.SendSpell(null, null, Owner, info.Unequip);
         }
 
         Destroy(this);

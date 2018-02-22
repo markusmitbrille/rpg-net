@@ -10,6 +10,10 @@ public class Aura : MonoBehaviour
 {
     private const string DescriptionSeperator = "---";
 
+    [SerializeField]
+    [DataMember]
+    private AuraInfo info;
+
     [DataMember]
     private Skill origin;
 
@@ -18,10 +22,6 @@ public class Aura : MonoBehaviour
 
     private Actor owner;
     private Effect[] effects;
-
-    [SerializeField]
-    [DataMember]
-    private AuraInfo info;
 
     [DataMember]
     private bool isFailing;
@@ -41,13 +41,13 @@ public class Aura : MonoBehaviour
     [DataMember]
     private bool isConcluded;
 
+    public AuraInfo Info => info;
+
     public Skill Origin => origin;
     public Aura Source => source;
 
     public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
     public Effect[] Effects => effects ?? (effects = GetComponents<Effect>());
-
-    public AuraInfo Info => info;
 
     public bool IsFailing => isFailing;
     public bool IsApplied => isApplied;
