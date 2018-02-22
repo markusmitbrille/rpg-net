@@ -2,6 +2,7 @@
 using Autrage.LEX.NET.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -14,116 +15,22 @@ public abstract class Actor : MonoBehaviour
     [DataMember]
     private int id;
 
-    [Header("Primary Attributes")]
-    [SerializeField]
-    [DataMember]
-    private ComplexStat might = new ComplexStat();
-
-    [SerializeField]
-    [DataMember]
-    private ComplexStat armour = new ComplexStat();
-
-    [SerializeField]
-    [DataMember]
-    private ComplexStat knowledge = new ComplexStat();
-
-    [Header("Secondary Attributes")]
-    [SerializeField]
-    [DataMember]
-    private ComplexStat initiative = new ComplexStat();
-
-    [SerializeField]
-    [DataMember]
-    private ComplexStat haste = new ComplexStat();
-
-    [SerializeField]
-    [DataMember]
-    private ComplexStat speed = new ComplexStat();
-
-    [Header("Resources")]
-    [SerializeField]
-    [DataMember]
-    private Resource life = new Resource();
-
-    [SerializeField]
-    [DataMember]
-    private Resource aether = new Resource();
-
-    [SerializeField]
-    [DataMember]
-    private Resource focus = new Resource();
-
-    [SerializeField]
-    [DataMember]
-    private Resource vim = new Resource();
-
-    [Header("Versatility")]
-    [SerializeField]
-    [DataMember]
-    private ComplexStat minOffence = new ComplexStat();
-
-    [SerializeField]
-    [DataMember]
-    private ComplexStat maxOffence = new ComplexStat();
-
-    [SerializeField]
-    [DataMember]
-    private ComplexStat minDefence = new ComplexStat();
-
-    [SerializeField]
-    [DataMember]
-    private ComplexStat maxDefence = new ComplexStat();
-
-    [Header("Minor Stats")]
-    [SerializeField]
-    [DataMember]
-    private ComplexStat outOfCombatRegenIterations = new ComplexStat();
-
     private IEnumerable<Aura> auras;
     private IEnumerable<Skill> skills;
     private IEnumerable<Equipment> equipment;
+    private IEnumerable<Stat> stats;
 
     public int ID => id;
 
-    public ComplexStat Might => might;
-    public ComplexStat Armour => armour;
-    public ComplexStat Knowledge => knowledge;
-
-    public ComplexStat Initiative => initiative;
-    public ComplexStat Haste => haste;
-    public ComplexStat Speed => speed;
-
-    public Resource Life => life;
-    public Resource Aether => aether;
-    public Resource Focus => focus;
-    public Resource Vim => vim;
-
-    public ComplexStat MinOffence => minOffence;
-    public ComplexStat MaxOffence => maxOffence;
-    public ComplexStat MinDefence => minDefence;
-    public ComplexStat MaxDefence => maxDefence;
-
-    public ComplexStat OutOfCombatRegenIterations => outOfCombatRegenIterations;
-
-    public float PrimaryImprovement => Arith.Avg(armour.Improvement, might.Improvement, knowledge.Improvement);
-    public float SecondaryImprovement => Arith.Avg(initiative.Improvement, haste.Improvement, speed.Improvement);
-    public float ResourceImprovement => Arith.Avg(life.Improvement, aether.Improvement, focus.Improvement, speed.Improvement);
-    public float OffensiveImprovement => Arith.Avg(might.Improvement, knowledge.Improvement);
-    public float DefensiveImprovement => Arith.Avg(armour.Improvement, knowledge.Improvement);
-
-    public float Versatility => Armour == 0f && Might == 0f ? 0.5f : Might / (Might + Armour);
-    public float Offence => Mathf.Max(0f, minOffence > maxOffence ? Versatility : minOffence + (maxOffence - minOffence) * Versatility);
-    public float Defence => Mathf.Max(0f, minDefence > maxDefence ? Versatility : minDefence + (maxDefence - minDefence) * Versatility);
-
-    [DataMember]
-    public bool IsInCombat { get; set; }
-
     public abstract Actor Target { get; }
     public abstract Vector3 Aim { get; }
+    public abstract bool IsInCombat { get; }
 
     public IEnumerable<Aura> Auras => auras ?? (auras = GetComponentsInChildren<Aura>());
     public IEnumerable<Skill> Skils => skills ?? (skills = GetComponentsInChildren<Skill>());
     public IEnumerable<Equipment> Equipment => equipment ?? (equipment = GetComponents<Equipment>());
+    public IEnumerable<Stat> Stats => stats ?? (stats = GetComponentsInChildren<Stat>());
+    public IEnumerable<Resource> Resources => Stats.OfType<Resource>();
 
     public event EventHandler<PackageEventArgs> SendingPackage;
     public event EventHandler<ReportEventArgs> SentPackage;
@@ -191,23 +98,6 @@ public abstract class Actor : MonoBehaviour
 
         // Refresh equipment once per tick
         equipment = null;
-
-        RegenerateResources();
-    }
-
-    private void RegenerateResources()
-    {
-        int iteration = 0;
-        int iterations = Mathf.RoundToInt(OutOfCombatRegenIterations);
-        do
-        {
-            life.Regenerate();
-            aether.Regenerate();
-            focus.Regenerate();
-            vim.Regenerate();
-
-            iteration++;
-        } while (!IsInCombat && iteration < iterations);
     }
 
     private T ReceivePackage<T>(Package<T> package)

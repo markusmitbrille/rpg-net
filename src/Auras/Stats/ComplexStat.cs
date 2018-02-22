@@ -8,7 +8,6 @@ using UnityEditor;
 
 #endif
 
-[Serializable]
 [DataContract]
 public class ComplexStat : Stat
 {
@@ -32,22 +31,33 @@ public class ComplexStat : Stat
     [DataMember]
     private float defaultMax;
 
+    [SerializeField]
     [DataMember]
-    public Stat Basis { get; set; }
+    private Stat basis;
 
+    [SerializeField]
     [DataMember]
-    public Stat Multiplier { get; set; }
+    private Stat multiplier;
 
+    [SerializeField]
     [DataMember]
-    public Stat Addend { get; set; }
+    private Stat addend;
 
+    [SerializeField]
     [DataMember]
-    public Stat Min { get; set; }
+    private Stat min;
 
+    [SerializeField]
     [DataMember]
-    public Stat Max { get; set; }
+    private Stat max;
 
-    public override float Value => Min == null || Max == null || Min > Max ? Actual : Mathf.Clamp(Actual, Min, Max);
+    public Stat Basis { get { return basis; } set { basis = value; } }
+    public Stat Multiplier { get { return multiplier; } set { basis = multiplier; } }
+    public Stat Addend { get { return addend; } set { basis = addend; } }
+    public Stat Min { get { return min; } set { basis = min; } }
+    public Stat Max { get { return max; } set { basis = max; } }
+
+    public override float Value => min == null || Max == null || Min > Max ? Actual : Mathf.Clamp(Actual, Min, Max);
     public float Actual => BaseVal * MultVal + AddVal;
 
     public float DefaultValue => defaultMin > defaultMax ? DefaultActual : Mathf.Clamp(DefaultActual, defaultMin, defaultMax);
@@ -60,19 +70,11 @@ public class ComplexStat : Stat
     private float MultVal => Multiplier ?? 1f;
     private float AddVal => Addend ?? 0f;
 
-    public ComplexStat()
-    {
-        Basis = defaultBasis;
-        Multiplier = defaultMultiplier;
-        Addend = defaultAddend;
-        Min = defaultMin;
-        Max = defaultMax;
-    }
-
 #if UNITY_EDITOR
 
-    [CustomPropertyDrawer(typeof(ComplexStat))]
-    public class ComplexStatDrawer : PropertyDrawer
+    [CanEditMultipleObjects]
+    [CustomEditor(typeof(ComplexStat))]
+    public class ComplexStatEditor : Editor
     {
         private const float xLabelWidth = 15f;
         private const float plusLabelWidth = 15f;
@@ -80,56 +82,58 @@ public class ComplexStat : Stat
         private const float semicolonLabelWidth = 8f;
         private const float closingBracketLabelWidth = 8f;
 
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        private SerializedProperty defaultBasis;
+        private SerializedProperty defaultMultiplier;
+        private SerializedProperty defaultAddend;
+        private SerializedProperty defaultMin;
+        private SerializedProperty defaultMax;
+
+        private SerializedProperty basis;
+        private SerializedProperty multiplier;
+        private SerializedProperty addend;
+        private SerializedProperty min;
+        private SerializedProperty max;
+
+        private void OnEnable()
         {
-            label = EditorGUI.BeginProperty(position, label, property);
-            position = EditorGUI.PrefixLabel(position, label);
+            defaultBasis = serializedObject.FindProperty(nameof(ComplexStat.defaultBasis));
+            defaultMultiplier = serializedObject.FindProperty(nameof(ComplexStat.defaultMultiplier));
+            defaultAddend = serializedObject.FindProperty(nameof(ComplexStat.defaultAddend));
+            defaultMin = serializedObject.FindProperty(nameof(ComplexStat.defaultMin));
+            defaultMax = serializedObject.FindProperty(nameof(ComplexStat.defaultMax));
 
-            float fieldWidth = (position.width - xLabelWidth - plusLabelWidth - elementOfLabelWidth - semicolonLabelWidth - closingBracketLabelWidth) / 5f;
+            basis = serializedObject.FindProperty(nameof(ComplexStat.basis));
+            multiplier = serializedObject.FindProperty(nameof(ComplexStat.multiplier));
+            addend = serializedObject.FindProperty(nameof(ComplexStat.addend));
+            min = serializedObject.FindProperty(nameof(ComplexStat.min));
+            max = serializedObject.FindProperty(nameof(ComplexStat.max));
+        }
 
-            // Temporarily remove indent for lists and sub-properties
-            EditorGUI.indentLevel = 0;
+        public override void OnInspectorGUI()
+        {
+            serializedObject.Update();
 
-            position.width = fieldWidth;
-            EditorGUI.PropertyField(position, property.FindPropertyRelative(nameof(defaultBasis)), GUIContent.none);
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.PropertyField(defaultBasis, GUIContent.none);
+            GUILayout.Label("✕");
+            EditorGUILayout.PropertyField(defaultMultiplier, GUIContent.none);
+            GUILayout.Label("+");
+            EditorGUILayout.PropertyField(defaultAddend, GUIContent.none);
+            GUILayout.Label(":");
+            EditorGUILayout.PropertyField(defaultMin, GUIContent.none);
+            GUILayout.Label("< x <");
+            EditorGUILayout.PropertyField(defaultMax, GUIContent.none);
+            EditorGUILayout.EndHorizontal();
 
-            position.x += fieldWidth;
-            position.width = xLabelWidth;
-            GUI.Label(position, "✕", new GUIStyle() { alignment = TextAnchor.MiddleCenter });
+            EditorGUILayout.BeginVertical();
+            EditorGUILayout.PropertyField(basis);
+            EditorGUILayout.PropertyField(multiplier);
+            EditorGUILayout.PropertyField(addend);
+            EditorGUILayout.PropertyField(min);
+            EditorGUILayout.PropertyField(max);
+            EditorGUILayout.EndVertical();
 
-            position.x += xLabelWidth;
-            position.width = fieldWidth;
-            EditorGUI.PropertyField(position, property.FindPropertyRelative(nameof(defaultMultiplier)), GUIContent.none);
-
-            position.x += fieldWidth;
-            position.width = plusLabelWidth;
-            GUI.Label(position, "+", new GUIStyle() { alignment = TextAnchor.MiddleCenter });
-
-            position.x += plusLabelWidth;
-            position.width = fieldWidth;
-            EditorGUI.PropertyField(position, property.FindPropertyRelative(nameof(defaultAddend)), GUIContent.none);
-
-            position.x += fieldWidth;
-            position.width = elementOfLabelWidth;
-            GUI.Label(position, "∈[ ", new GUIStyle() { alignment = TextAnchor.MiddleRight });
-
-            position.x += elementOfLabelWidth;
-            position.width = fieldWidth;
-            EditorGUI.PropertyField(position, property.FindPropertyRelative(nameof(defaultMin)), GUIContent.none);
-
-            position.x += fieldWidth;
-            position.width = semicolonLabelWidth;
-            GUI.Label(position, ";", new GUIStyle() { alignment = TextAnchor.MiddleCenter });
-
-            position.x += semicolonLabelWidth;
-            position.width = fieldWidth;
-            EditorGUI.PropertyField(position, property.FindPropertyRelative(nameof(defaultMax)), GUIContent.none);
-
-            position.x += fieldWidth;
-            position.width = closingBracketLabelWidth;
-            GUI.Label(position, " ]", new GUIStyle() { alignment = TextAnchor.MiddleLeft });
-
-            EditorGUI.EndProperty();
+            serializedObject.ApplyModifiedProperties();
         }
     }
 

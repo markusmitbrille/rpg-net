@@ -18,4 +18,12 @@ public class PlayerActor : Actor
             throw new NotImplementedException();
         }
     }
+
+    public override bool IsInCombat
+    {
+        get
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

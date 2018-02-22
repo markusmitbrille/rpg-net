@@ -19,30 +19,9 @@ public class Aura : MonoBehaviour
     private Actor owner;
     private Effect[] effects;
 
-    [Auto]
     [SerializeField]
     [DataMember]
-    private int id;
-
-    [BitMask(typeof(AuraTags))]
-    [SerializeField]
-    [DataMember]
-    private AuraTags tags;
-
-    [SerializeField]
-    [DataMember]
-    private AuraCategory category;
-
-    [Header("Description")]
-    [TextArea]
-    [SerializeField]
-    [DataMember]
-    private string summary = "";
-
-    [TextArea]
-    [SerializeField]
-    [DataMember]
-    private string flavour = "";
+    private AuraInfo info;
 
     [DataMember]
     private bool isFailing;
@@ -68,42 +47,7 @@ public class Aura : MonoBehaviour
     public Actor Owner => owner ?? (owner = GetComponentInParent<Actor>());
     public Effect[] Effects => effects ?? (effects = GetComponents<Effect>());
 
-    public int ID => id;
-    public AuraTags Tags => tags;
-    public AuraCategory Category => category;
-
-    public string Name => name;
-    public string Summary => summary;
-    public string Flavour => flavour;
-
-    public string Description
-    {
-        get
-        {
-            // Create string builder for performant string concatenation
-            StringBuilder description = new StringBuilder(summary);
-
-            foreach (Effect effect in Effects)
-            {
-                // Append the seperator with blank lines before and after
-                description.AppendLine().AppendLine(DescriptionSeperator).AppendLine();
-
-                // Append the effect's description
-                description.Append(effect.Description);
-            }
-
-            if (!string.IsNullOrEmpty(flavour) && !string.IsNullOrWhiteSpace(flavour))
-            {
-                // Append the seperator with blank lines before and after
-                description.AppendLine().AppendLine(DescriptionSeperator).AppendLine();
-
-                // Append the ability's flavour text
-                description.AppendLine(flavour);
-            }
-
-            return description.ToString();
-        }
-    }
+    public AuraInfo Info => info;
 
     public bool IsFailing => isFailing;
     public bool IsApplied => isApplied;
@@ -117,11 +61,37 @@ public class Aura : MonoBehaviour
 
     public void PreventFail() => isFailing = false;
 
-    public bool Is(AuraCategory category) => this.category.Is(category);
+    public bool Is(AuraCategory category) => info.Category.Is(category);
 
-    public bool Is(AuraTags tags) => this.tags.HasFlag(tags);
+    public bool Is(AuraTags tags) => info.Tags.HasFlag(tags);
 
-    public override string ToString() => name;
+    public override string ToString() => info.Title;
+
+    public string GetDescription()
+    {
+        // Create string builder for performant string concatenation
+        StringBuilder description = new StringBuilder(info.Description);
+
+        foreach (Effect effect in Effects)
+        {
+            // Append the seperator with blank lines before and after
+            description.AppendLine().AppendLine(DescriptionSeperator).AppendLine();
+
+            // Append the effect's description
+            description.Append(effect.Description);
+        }
+
+        if (!string.IsNullOrEmpty(info.Flavour) && !string.IsNullOrWhiteSpace(info.Flavour))
+        {
+            // Append the seperator with blank lines before and after
+            description.AppendLine().AppendLine(DescriptionSeperator).AppendLine();
+
+            // Append the ability's flavour text
+            description.AppendLine(info.Flavour);
+        }
+
+        return description.ToString();
+    }
 
     public Aura Create(Actor actor, Skill origin, Aura source)
     {

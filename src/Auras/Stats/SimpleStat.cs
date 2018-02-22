@@ -9,9 +9,4 @@ public class SimpleStat : Stat
     private float value;
 
     public override float Value { get { return value; } }
-
-    public SimpleStat(float value)
-    {
-        this.value = value;
-    }
 }

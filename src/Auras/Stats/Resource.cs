@@ -1,9 +1,7 @@
 ﻿using Autrage.LEX.NET;
 using Autrage.LEX.NET.Serialization;
-using System;
 using UnityEngine;
 
-[Serializable]
 [DataContract]
 public class Resource : Stat
 {
@@ -13,19 +11,23 @@ public class Resource : Stat
 
     [SerializeField]
     [DataMember]
-    private ComplexStat def = new ComplexStat();
+    private ComplexStat def;
 
     [SerializeField]
     [DataMember]
-    private ComplexStat min = new ComplexStat();
+    private ComplexStat min;
 
     [SerializeField]
     [DataMember]
-    private ComplexStat max = new ComplexStat();
+    private ComplexStat max;
 
     [SerializeField]
     [DataMember]
-    private ComplexStat regen = new ComplexStat();
+    private ComplexStat regen;
+
+    [SerializeField]
+    [DataMember]
+    private ComplexStat combatRegen;
 
     public override float Value => value;
 
@@ -33,13 +35,12 @@ public class Resource : Stat
     public ComplexStat Min => min;
     public ComplexStat Max => max;
     public ComplexStat Regen => regen;
+    public ComplexStat CombatRegen => combatRegen;
 
-    public float Improvement => Arith.Avg(def.Improvement, min.Improvement, max.Improvement, regen.Improvement);
-    public float ActualImprovement => Arith.Avg(def.ActualImprovement, min.ActualImprovement, max.ActualImprovement, regen.ActualImprovement);
+    public float Improvement => Arith.Avg(def?.Improvement ?? 0, min?.Improvement ?? 0, max?.Improvement ?? 0, regen?.Improvement ?? 0, combatRegen?.Improvement ?? 0);
+    public float ActualImprovement => Arith.Avg(def?.ActualImprovement ?? 0, min?.ActualImprovement ?? 0, max?.ActualImprovement ?? 0, regen?.ActualImprovement ?? 0, combatRegen?.Improvement ?? 0);
 
-    public void Reset() => Set(def);
-
-    public void Regenerate() => Set(value + regen * Time.deltaTime);
+    public void Reset() => Set(def ?? 0f);
 
     public void Set(float value)
     {
@@ -49,7 +50,28 @@ public class Resource : Stat
         }
         else
         {
-            this.value = Mathf.Clamp(value, min, max);
+            this.value = Mathf.Clamp(value, min ?? 0f, max ?? 0f);
         }
     }
+
+    private void Awake()
+    {
+        value = def ?? 0f;
+    }
+
+    private void Update()
+    {
+        if (Owner.IsInCombat)
+        {
+            RegenerateCombat();
+        }
+        else
+        {
+            Regenerate();
+        }
+    }
+
+    private void Regenerate() => Set(value + (regen ?? 0f) * Time.deltaTime);
+
+    private void RegenerateCombat() => Set(value + (combatRegen ?? 0f) * Time.deltaTime);
 }

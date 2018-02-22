@@ -1,4 +1,6 @@
-﻿public class Attack : Package<bool>
+﻿using System;
+
+public class Attack : Package<bool>
 {
     public Damage Damage { get; set; }
 
@@ -20,10 +22,11 @@
 
     private Report<bool> ReportDamage()
     {
-        float old = Receiver.Life;
-        Receiver.Life.Set(Receiver.Life - Damage.Amount);
-        Damage = new Damage(Damage.Category, old - Receiver.Life);
-        return new AttackReport(Origin, Source, Sender, Receiver, Damage.IsNothing, Damage);
+        //float old = Receiver.Life;
+        //Receiver.Life.Set(Receiver.Life - Damage.Amount);
+        //Damage = new Damage(Damage.Category, old - Receiver.Life);
+        //return new AttackReport(Origin, Source, Sender, Receiver, Damage.IsNothing, Damage);
+        throw new NotImplementedException();
     }
 
     private Report<bool> ReportNothing()

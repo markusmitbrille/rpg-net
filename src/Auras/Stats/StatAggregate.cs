@@ -7,7 +7,7 @@ using System.Collections.Generic;
 public abstract class StatAggregate : Stat, IEnumerable<Stat>
 {
     [DataMember]
-    private List<Stat> contributors = new List<Stat>();
+    private List<Stat> contributors;
 
     public void Add(Stat stat) => contributors.Add(stat);
 
