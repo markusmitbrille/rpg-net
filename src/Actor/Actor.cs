@@ -13,10 +13,11 @@ public abstract class Actor : MonoBehaviour
 
     public ActorInfo ID => id;
 
-    public Skill.Collection Skills { get; private set; }
-    public Equipment.Collection Equipments { get; private set; }
-    public ComplexStat.Collection Complices { get; private set; }
-    public Resource.Collection Resources { get; private set; }
+    public Family<Aura> Auras { get; private set; }
+    public Family<Skill> Skills { get; private set; }
+    public Family<Equipment> Equipments { get; private set; }
+    public Family<ComplexStat> Complices { get; private set; }
+    public Family<Resource> Resources { get; private set; }
 
     public abstract Actor Target { get; }
     public abstract Vector3 Aim { get; }
@@ -29,8 +30,6 @@ public abstract class Actor : MonoBehaviour
     public event EventHandler<PackageEventArgs> ReceivingPackage;
 
     public event EventHandler<ReportEventArgs> ReceivedPackage;
-
-    public override string ToString() => name;
 
     public void ConfirmSelection() => ExecuteEvents.Execute<IConfirmSelectionTarget>(gameObject, null, (target, data) => target.ConfirmSelection());
 
@@ -82,10 +81,20 @@ public abstract class Actor : MonoBehaviour
 
     private void Awake()
     {
-        Skills = new Skill.Collection();
-        Equipments = new Equipment.Collection();
-        Complices = new ComplexStat.Collection();
-        Resources = new Resource.Collection();
+        Auras = new Family<Aura>(this);
+        Skills = new Family<Skill>(this);
+        Equipments = new Family<Equipment>(this);
+        Complices = new Family<ComplexStat>(this);
+        Resources = new Family<Resource>(this);
+    }
+
+    private void Start()
+    {
+        Auras.Fetch();
+        Skills.Fetch();
+        Equipments.Fetch();
+        Complices.Fetch();
+        Resources.Fetch();
     }
 
     private T ReceivePackage<T>(Package<T> package)

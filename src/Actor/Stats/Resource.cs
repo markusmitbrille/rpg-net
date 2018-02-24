@@ -1,6 +1,5 @@
 ﻿using Autrage.LEX.NET;
 using Autrage.LEX.NET.Serialization;
-using System.Collections.ObjectModel;
 using UnityEngine;
 
 [DataContract]
@@ -55,15 +54,15 @@ public sealed class Resource : Stat
 
     public void Clear() => Set(def ?? 0f);
 
-    private void Start() => Owner.Resources.Add(this);
+    private void Start() => Owner.Instance?.Resources.Fetch();
 
-    private void OnDestroy() => Owner.Resources.Remove(this);
+    private void OnDestroy() => Owner.Instance?.Resources.Fetch();
 
     private void Awake() => value = def ?? 0f;
 
     private void Update()
     {
-        if (Owner.IsInCombat)
+        if (Owner.Instance.IsInCombat)
         {
             RegenerateCombat();
         }
@@ -76,53 +75,4 @@ public sealed class Resource : Stat
     private void Regenerate() => Set(value + (regen ?? 0f) * Time.deltaTime);
 
     private void RegenerateCombat() => Set(value + (combatRegen ?? 0f) * Time.deltaTime);
-
-    public class Collection : KeyedCollection<StatInfo, Resource>
-    {
-        public Collection() : base(new IdentityEqualityComparer<StatInfo>())
-        {
-        }
-
-        protected override StatInfo GetKeyForItem(Resource item) => item.Info;
-
-        protected override void InsertItem(int index, Resource item)
-        {
-            if (item == null)
-            {
-                return;
-            }
-            if (Contains(item))
-            {
-                Resource original = this[item.Info];
-                original.Set(original.value + item.value);
-                Destroy(item);
-                return;
-            }
-
-            base.InsertItem(index, item);
-        }
-
-        protected override void SetItem(int index, Resource item) => InsertItem(index, item);
-
-        protected override void RemoveItem(int index)
-        {
-            if (index >= Count)
-            {
-                return;
-            }
-
-            Destroy(this[index]);
-            base.RemoveItem(index);
-        }
-
-        protected override void ClearItems()
-        {
-            foreach (Resource item in this)
-            {
-                Destroy(item);
-            }
-
-            base.ClearItems();
-        }
-    }
 }

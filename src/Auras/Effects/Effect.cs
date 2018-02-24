@@ -1,36 +1,26 @@
-﻿using Autrage.LEX.NET;
-using Autrage.LEX.NET.Serialization;
-using System;
+﻿using Autrage.LEX.NET.Serialization;
 using UnityEngine;
 
 [DataContract]
-public abstract class Effect<T> : MonoBehaviour
-    where T : EffectInfo
+public abstract class Effect : MonoBehaviour
 {
     [SerializeField]
     [DataMember]
-    private T id;
+    private EffectInfo info;
 
-    public T ID => id;
-    public Aura Aura { get; private set; }
-    public Actor Owner { get; private set; }
+    public EffectInfo Info => info;
+    public Parent<Aura> Aura { get; private set; }
+    public Parent<Actor> Owner { get; private set; }
+
+    private void Awake()
+    {
+        Aura = new Parent<Aura>(this);
+        Owner = new Parent<Actor>(this);
+    }
 
     private void Start()
     {
-        Aura = GetComponentInParent<Aura>();
-        if (Aura == null)
-        {
-            Bugger.Error($"Could not get {nameof(Aura)} of {GetType()} {this}!");
-            Destroy(this);
-            return;
-        }
-
-        Owner = GetComponentInParent<Actor>();
-        if (Owner == null)
-        {
-            Bugger.Error($"Could not get {nameof(Owner)} of {GetType()} {this}!");
-            Destroy(this);
-            return;
-        }
+        Aura.Fetch();
+        Owner.Fetch();
     }
 }
