@@ -15,6 +15,4 @@ public abstract class TargetedEffect : Effect
 
     public IEnumerable<Actor> Targets => selector.Targets;
     public bool HasTargets => selector.HasTargets;
-
-    public override StageResults OnUpdate() => selector.HasTargets ? StageResults.CanComplete : StageResults.None;
 }

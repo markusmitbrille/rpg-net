@@ -1,23 +1,18 @@
-﻿using Autrage.LEX.NET.Serialization;
+﻿using Autrage.LEX.NET;
+using Autrage.LEX.NET.Serialization;
 using UnityEngine;
-using static Autrage.LEX.NET.Bugger;
 
 [DataContract]
-public class Equipment : MonoBehaviour, IIdentifiable<EquipmentInfo>
+public sealed class Equipment : MonoBehaviour, IUnique<EquipmentInfo>, IExtendable<Equipment>, IDestructible
 {
     [SerializeField]
     [DataMember]
-    private EquipmentInfo info;
+    private EquipmentInfo id;
 
-    [DataMember]
-    private Actor actor;
+    public EquipmentInfo ID => id;
+    public Actor Owner { get; private set; }
 
-    public EquipmentInfo Info => info;
-    public Actor Actor => actor ?? (actor = GetComponent<Actor>());
-
-    EquipmentInfo IIdentifiable<EquipmentInfo>.ID => Info;
-
-    public bool Is(EquipmentCategory category) => info.Category.Is(category);
+    public bool Is(EquipmentCategory category) => id.Category.Is(category);
 
     public Equipment Equip(Actor actor)
     {
@@ -28,9 +23,9 @@ public class Equipment : MonoBehaviour, IIdentifiable<EquipmentInfo>
 
         Equipment equipment = Instantiate(this, actor.transform);
 
-        if (info.Equip != null)
+        if (id.Equip != null)
         {
-            Actor.SendSpell(null, null, Actor, info.Equip);
+            Owner.SendSpell(null, null, Owner, id.Equip);
         }
 
         return equipment;
@@ -43,22 +38,35 @@ public class Equipment : MonoBehaviour, IIdentifiable<EquipmentInfo>
             return;
         }
 
-        if (info.Unequip != null)
+        if (id.Unequip != null)
         {
-            Actor.SendSpell(null, null, Actor, info.Unequip);
+            Owner.SendSpell(null, null, Owner, id.Unequip);
         }
 
-        Destroy(this);
+        Destruct();
+    }
+
+    public void Destruct() => Destroy(this);
+
+    void IExtendable<Equipment>.Extend(Equipment other)
+    {
     }
 
     private void Start()
     {
-        // Self-destruct if no owner was found to avoid orphaned equipments
-        if (Actor == null)
+        Owner = GetComponentInParent<Actor>();
+        if (Owner == null)
         {
-            Error($"Could not get owner of {this}!");
+            Bugger.Error($"Could not get {nameof(Owner)} of {GetType()} {this}!");
             Destroy(this);
             return;
         }
+
+        Owner.Equipments.Add(this);
+    }
+
+    private void OnDestroy()
+    {
+        Owner.Equipments.Remove(this);
     }
 }

@@ -49,36 +49,4 @@ public class LuaEffect : Effect
     [SerializeField]
     [DataMember]
     private string onConclusion = "";
-
-    public override StageResults OnPreApplication()
-    {
-        object[] results = Monoton<LuaSandbox>.Instance.DoString(onPreApplication ?? "", chunkName);
-        return results.Length > 0 ? results[0] as StageResults? ?? StageResults.None : StageResults.None;
-    }
-
-    public override StageResults OnPreUpdate()
-    {
-        object[] results = Monoton<LuaSandbox>.Instance.DoString(onPreUpdate ?? "", chunkName);
-        return results.Length > 0 ? results[0] as StageResults? ?? StageResults.None : StageResults.None;
-    }
-
-    public override StageResults OnApplication()
-    {
-        object[] results = Monoton<LuaSandbox>.Instance.DoString(onApplication ?? "", chunkName);
-        return results.Length > 0 ? results[0] as StageResults? ?? StageResults.None : StageResults.None;
-    }
-
-    public override StageResults OnUpdate()
-    {
-        object[] results = Monoton<LuaSandbox>.Instance.DoString(onUpdate ?? "", chunkName);
-        return results.Length > 0 ? results[0] as StageResults? ?? StageResults.None : StageResults.None;
-    }
-
-    public override void OnCompletion() => Monoton<LuaSandbox>.Instance.DoString(onCompletion ?? "", chunkName);
-
-    public override void OnTermination() => Monoton<LuaSandbox>.Instance.DoString(onTermination ?? "", chunkName);
-
-    public override void OnFailure() => Monoton<LuaSandbox>.Instance.DoString(onFailure ?? "", chunkName);
-
-    public override void OnConclusion() => Monoton<LuaSandbox>.Instance.DoString(onConclusion ?? "", chunkName);
 }

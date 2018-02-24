@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 [DisallowMultipleComponent]
 [DataContract]
-public abstract class Actor : MonoBehaviour,    IIdentifiable<ActorInfo>
+public abstract class Actor : MonoBehaviour, IUnique<ActorInfo>
 {
     [SerializeField]
     [DataMember]
@@ -13,19 +13,23 @@ public abstract class Actor : MonoBehaviour,    IIdentifiable<ActorInfo>
 
     public ActorInfo ID => id;
 
-    public IdentifiableCollection<AuraInfo, Aura> Auras { get; private set; }
-    public IdentifiableCollection<SkillInfo, Skill> Skills { get; private set; }
-    public IdentifiableCollection<EquipmentInfo, Equipment> Equipments { get; private set; }
-    public IdentifiableCollection<StatInfo, Stat> Stats { get; private set; }
+    public TraitCollection<AuraInfo, Aura> Auras { get; private set; }
+    public TraitCollection<SkillInfo, Skill> Skills { get; private set; }
+    public TraitCollection<EquipmentInfo, Equipment> Equipments { get; private set; }
+    public TraitCollection<StatInfo, Stat> Stats { get; private set; }
+    public TraitCollection<StatInfo, ComplexStat> Complices { get; private set; }
+    public TraitCollection<StatInfo, Resource> Resources { get; private set; }
 
     public abstract Actor Target { get; }
     public abstract Vector3 Aim { get; }
     public abstract bool IsInCombat { get; }
 
     public event EventHandler<PackageEventArgs> SendingPackage;
+
     public event EventHandler<ReportEventArgs> SentPackage;
 
     public event EventHandler<PackageEventArgs> ReceivingPackage;
+
     public event EventHandler<ReportEventArgs> ReceivedPackage;
 
     public override string ToString() => name;
@@ -80,10 +84,12 @@ public abstract class Actor : MonoBehaviour,    IIdentifiable<ActorInfo>
 
     private void Awake()
     {
-        Auras = new IdentifiableCollection<AuraInfo, Aura>();
-        Skills = new IdentifiableCollection<SkillInfo, Skill>();
-        Equipments = new IdentifiableCollection<EquipmentInfo, Equipment>();
-        Stats = new IdentifiableCollection<StatInfo, Stat>();
+        Auras = new TraitCollection<AuraInfo, Aura>();
+        Skills = new TraitCollection<SkillInfo, Skill>();
+        Equipments = new TraitCollection<EquipmentInfo, Equipment>();
+        Stats = new TraitCollection<StatInfo, Stat>();
+        Complices = new TraitCollection<StatInfo, ComplexStat>();
+        Resources = new TraitCollection<StatInfo, Resource>();
     }
 
     private T ReceivePackage<T>(Package<T> package)

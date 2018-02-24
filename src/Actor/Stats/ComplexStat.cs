@@ -1,6 +1,6 @@
 ﻿using Autrage.LEX.NET.Serialization;
-using System;
 using UnityEngine;
+using System.Linq;
 
 #if UNITY_EDITOR
 
@@ -9,7 +9,7 @@ using UnityEditor;
 #endif
 
 [DataContract]
-public class ComplexStat : Stat
+public sealed class ComplexStat : Stat, IExtendable<ComplexStat>
 {
     [SerializeField]
     [DataMember]
@@ -33,29 +33,29 @@ public class ComplexStat : Stat
 
     [SerializeField]
     [DataMember]
-    private Stat basis;
+    private StatSum basis;
 
     [SerializeField]
     [DataMember]
-    private Stat multiplier;
+    private StatProduct multiplier;
 
     [SerializeField]
     [DataMember]
-    private Stat addend;
+    private StatSum addend;
 
     [SerializeField]
     [DataMember]
-    private Stat min;
+    private StatSum min;
 
     [SerializeField]
     [DataMember]
-    private Stat max;
+    private StatSum max;
 
-    public Stat Basis { get { return basis; } set { basis = value; } }
-    public Stat Multiplier { get { return multiplier; } set { basis = multiplier; } }
-    public Stat Addend { get { return addend; } set { basis = addend; } }
-    public Stat Min { get { return min; } set { basis = min; } }
-    public Stat Max { get { return max; } set { basis = max; } }
+    public StatSum Basis => basis;
+    public StatProduct Multiplier => multiplier;
+    public StatSum Addend => addend;
+    public StatSum Min => min;
+    public StatSum Max => max;
 
     public override float Value => min == null || Max == null || Min > Max ? Actual : Mathf.Clamp(Actual, Min, Max);
     public float Actual => BaseVal * MultVal + AddVal;
@@ -69,6 +69,17 @@ public class ComplexStat : Stat
     private float BaseVal => Basis ?? 0f;
     private float MultVal => Multiplier ?? 1f;
     private float AddVal => Addend ?? 0f;
+
+    public void Extend(ComplexStat other)
+    {
+        basis.Add(other.basis.ToArray());
+        multiplier.Add(other.multiplier.ToArray());
+        addend.Add(other.addend.ToArray());
+    }
+
+    protected override void Incorporate() => Owner.Complices.Add(this);
+
+    protected override void Excorporate() => Owner.Complices.Remove(this);
 
 #if UNITY_EDITOR
 

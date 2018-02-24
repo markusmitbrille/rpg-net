@@ -2,7 +2,7 @@
 using System.Linq;
 
 [DataContract]
-public class StatSum : StatAggregate
+public sealed class StatSum : StatAggregate
 {
-    public override float Value => this.Sum(stat => stat);
+    public override float Value => this.Any() ? this.Sum(stat => stat) : 0f;
 }

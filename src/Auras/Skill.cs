@@ -1,91 +1,95 @@
-﻿using Autrage.LEX.NET.Serialization;
+﻿using Autrage.LEX.NET;
+using Autrage.LEX.NET.Serialization;
 using UnityEngine;
-using static Autrage.LEX.NET.Bugger;
 
 [DataContract]
-public class Skill : MonoBehaviour, IIdentifiable<SkillInfo>
+public sealed class Skill : MonoBehaviour, IUnique<SkillInfo>, IExtendable<Skill>, IDestructible
 {
     [SerializeField]
     [DataMember]
-    public SkillInfo info;
-
-    [DataMember]
-    private Actor actor;
-
-    public SkillInfo Info => info;
-    public Actor Actor => actor ?? (actor = GetComponentInParent<Actor>());
+    public SkillInfo id;
 
     [DataMember]
     public float Cooldown { get; set; }
 
-    SkillInfo IIdentifiable<SkillInfo>.ID => Info;
+    public SkillInfo ID => id;
+    public Actor Owner { get; private set; }
 
-    public bool Is(AuraCategory category) => (info.Active?.Is(category) ?? false) || (info.Passive?.Is(category) ?? false);
+    public bool IsOnCooldown => Cooldown > 0f;
+    public bool IsActive => id.Active != null;
+    public bool IsPassive => id.Passive != null;
 
-    public Aura Use()
+    public bool Is(AuraCategory category) => (id.Active?.Is(category) ?? false) || (id.Passive?.Is(category) ?? false);
+
+    public Aura SendActive()
     {
         if (!enabled)
         {
             return null;
         }
-        if (info.Active == null)
+        if (!IsActive)
         {
             return null;
         }
-        if (Cooldown > 0f)
+        if (IsOnCooldown)
         {
             return null;
         }
 
-        return Actor.SendSpell(this, null, Actor, info.Active);
+        return Owner.SendSpell(this, null, Owner, id.Active);
+    }
+
+    public Aura SendPassive()
+    {
+        if (!enabled)
+        {
+            return null;
+        }
+        if (!IsPassive)
+        {
+            return null;
+        }
+        if (IsOnCooldown)
+        {
+            return null;
+        }
+
+        return Owner.SendSpell(this, null, Owner, id.Passive);
+    }
+
+    public void Destruct() => Destroy(this);
+
+    void IExtendable<Skill>.Extend(Skill other)
+    {
     }
 
     private void Start()
     {
-        // Self-destruct if no owner was found to avoid orphaned skills
-        if (Actor == null)
+        Owner = GetComponentInParent<Actor>();
+        if (Owner == null)
         {
-            Error($"Could not get owner of {this}!");
+            Bugger.Error($"Could not get {nameof(Owner)} of {GetType()} {this}!");
             Destroy(this);
             return;
         }
 
-        UsePassive();
+        Owner.Skills.Add(this);
+    }
+
+    private void OnDestroy()
+    {
+        Owner.Skills.Remove(this);
     }
 
     private void Update()
     {
-        if (Cooldown > 0f)
+        if (IsOnCooldown)
         {
             ReduceCooldown();
         }
+
+        SendPassive();
     }
 
-    private void ReduceCooldown()
-    {
-        Cooldown -= Time.deltaTime;
-        if (Cooldown <= 0f)
-        {
-            Cooldown = 0f;
-            UsePassive();
-        }
-    }
-
-    private void UsePassive()
-    {
-        if (!enabled)
-        {
-            return;
-        }
-        if (info.Passive == null)
-        {
-            return;
-        }
-        if (Cooldown > 0f)
-        {
-            return;
-        }
-
-        Actor.SendSpell(this, null, Actor, info.Passive);
-    }
+    private void ReduceCooldown() => Cooldown = Cooldown > Time.deltaTime ? Cooldown - Time.deltaTime : 0f;
 }

@@ -3,7 +3,7 @@ using Autrage.LEX.NET.Serialization;
 using UnityEngine;
 
 [DataContract]
-public class Resource : Stat
+public sealed class Resource : Stat, IExtendable<Resource>
 {
     [SerializeField]
     [DataMember]
@@ -40,8 +40,6 @@ public class Resource : Stat
     public float Improvement => Arith.Avg(def?.Improvement ?? 0, min?.Improvement ?? 0, max?.Improvement ?? 0, regen?.Improvement ?? 0, combatRegen?.Improvement ?? 0);
     public float ActualImprovement => Arith.Avg(def?.ActualImprovement ?? 0, min?.ActualImprovement ?? 0, max?.ActualImprovement ?? 0, regen?.ActualImprovement ?? 0, combatRegen?.Improvement ?? 0);
 
-    public void Reset() => Set(def ?? 0f);
-
     public void Set(float value)
     {
         if (min > max)
@@ -54,14 +52,19 @@ public class Resource : Stat
         }
     }
 
-    private void Awake()
-    {
-        value = def ?? 0f;
-    }
+    public void Clear() => Set(def ?? 0f);
+
+    public void Extend(Resource other) => Set(value + other.value);
+
+    protected override void Incorporate() => Owner.Resources.Add(this);
+
+    protected override void Excorporate() => Owner.Resources.Remove(this);
+
+    private void Awake() => value = def ?? 0f;
 
     private void Update()
     {
-        if (Actor.IsInCombat)
+        if (Owner.IsInCombat)
         {
             RegenerateCombat();
         }
