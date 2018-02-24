@@ -3,7 +3,7 @@ using Autrage.LEX.NET.Serialization;
 using UnityEngine;
 
 [DataContract]
-public abstract class Stat : MonoBehaviour, IUnique<StatInfo>, IExtendable<Stat>, IDestructible
+public abstract class Stat : MonoBehaviour, IUnique<StatInfo>, IDestructible
 {
     [SerializeField]
     [DataMember]
@@ -16,10 +16,6 @@ public abstract class Stat : MonoBehaviour, IUnique<StatInfo>, IExtendable<Stat>
     public static implicit operator float(Stat stat) => stat.Value;
 
     public void Destruct() => Destroy(this);
-
-    void IExtendable<Stat>.Extend(Stat other)
-    {
-    }
 
     protected virtual void Incorporate() => Owner.Stats.Add(this);
 

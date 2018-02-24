@@ -3,7 +3,7 @@ using Autrage.LEX.NET.Serialization;
 using UnityEngine;
 
 [DataContract]
-public sealed class Skill : MonoBehaviour, IUnique<SkillInfo>, IExtendable<Skill>, IDestructible
+public sealed class Skill : MonoBehaviour, IUnique<SkillInfo>, IDestructible
 {
     [SerializeField]
     [DataMember]
@@ -58,10 +58,6 @@ public sealed class Skill : MonoBehaviour, IUnique<SkillInfo>, IExtendable<Skill
     }
 
     public void Destruct() => Destroy(this);
-
-    void IExtendable<Skill>.Extend(Skill other)
-    {
-    }
 
     private void Start()
     {

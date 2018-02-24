@@ -3,7 +3,7 @@ using Autrage.LEX.NET.Serialization;
 using UnityEngine;
 
 [DataContract]
-public sealed class Equipment : MonoBehaviour, IUnique<EquipmentInfo>, IExtendable<Equipment>, IDestructible
+public sealed class Equipment : MonoBehaviour, IUnique<EquipmentInfo>, IDestructible
 {
     [SerializeField]
     [DataMember]
@@ -47,10 +47,6 @@ public sealed class Equipment : MonoBehaviour, IUnique<EquipmentInfo>, IExtendab
     }
 
     public void Destruct() => Destroy(this);
-
-    void IExtendable<Equipment>.Extend(Equipment other)
-    {
-    }
 
     private void Start()
     {
