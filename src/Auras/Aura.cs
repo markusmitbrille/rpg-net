@@ -1,4 +1,5 @@
-﻿using Autrage.LEX.NET.Serialization;
+﻿using Autrage.LEX.NET.Extensions;
+using Autrage.LEX.NET.Serialization;
 using System.Linq;
 using UnityEngine;
 using static Autrage.LEX.NET.Bugger;
@@ -7,8 +8,6 @@ using static Autrage.LEX.NET.Bugger;
 [DataContract]
 public sealed class Aura : MonoBehaviour
 {
-    private const string DescriptionSeperator = "---";
-
     [SerializeField]
     [DataMember]
     private AuraInfo info;
@@ -24,6 +23,8 @@ public sealed class Aura : MonoBehaviour
     public Aura Source => source;
 
     public Parent<Actor> Owner { get; private set; }
+    public Family<Inhibitor> Inhibitors { get; private set; }
+    public Family<Conductor> Conductors { get; private set; }
 
     public bool Is(AuraCategory category) => info.Category.Is(category);
 
@@ -48,16 +49,61 @@ public sealed class Aura : MonoBehaviour
     private void Awake()
     {
         Owner = new Parent<Actor>(this);
+        Inhibitors = new Family<Inhibitor>(this);
+        Conductors = new Family<Conductor>(this);
     }
 
     private void Start()
     {
-        Owner.Fetch();
-        Owner.Instance?.Auras.Fetch();
+        if (Owner.Fetch() == null)
+        {
+            return;
+        }
+
+        if (Owner.Instance.Auras.Lacks(this))
+        {
+            Owner.Instance.Auras.Fetch();
+        }
+
+        if (Inhibitors.All(inhibitor => inhibitor.AllowStart))
+        {
+            Conductors.ForEach(conductor => conductor.ConductStart());
+        }
+        else
+        {
+            Conductors.ForEach(conductor => conductor.ConductTermination());
+            Conductors.ForEach(conductor => conductor.ConductConclusion());
+            Destroy(gameObject);
+        }
     }
 
     private void OnDestroy()
     {
-        Owner.Instance?.Auras.Fetch();
+        if (Owner.Instance?.Auras.Contains(this) ?? false)
+        {
+            Owner.Instance.Auras.Fetch();
+        }
+    }
+
+    private void Update()
+    {
+        if (Inhibitors.All(inhibitor => inhibitor.AllowUpdate))
+        {
+            Conductors.ForEach(conductor => conductor.ConductUpdate());
+        }
+        else
+        {
+            Conductors.ForEach(conductor => conductor.ConductTermination());
+            Conductors.ForEach(conductor => conductor.ConductConclusion());
+            Destroy(gameObject);
+            return;
+        }
+
+        if (Inhibitors.All(inhibitor => inhibitor.AllowCompletion))
+        {
+            Conductors.ForEach(conductor => conductor.ConductCompletion());
+            Conductors.ForEach(conductor => conductor.ConductConclusion());
+            Destroy(gameObject);
+        }
     }
 }
