@@ -3,23 +3,17 @@ using Autrage.LEX.NET.Serialization;
 using UnityEngine;
 
 [DataContract]
-public abstract class Stat : MonoBehaviour, IUnique<StatInfo>, IDestructible
+public abstract class Stat : MonoBehaviour
 {
     [SerializeField]
     [DataMember]
-    private StatInfo id;
+    private StatInfo info;
 
-    public StatInfo ID => id;
+    public StatInfo Info => info;
     public Actor Owner { get; private set; }
     public abstract float Value { get; }
 
     public static implicit operator float(Stat stat) => stat.Value;
-
-    public void Destruct() => Destroy(this);
-
-    protected virtual void Incorporate() => Owner.Stats.Add(this);
-
-    protected virtual void Excorporate() => Owner.Stats.Remove(this);
 
     private void Start()
     {
@@ -27,15 +21,8 @@ public abstract class Stat : MonoBehaviour, IUnique<StatInfo>, IDestructible
         if (Owner == null)
         {
             Bugger.Error($"Could not get {nameof(Owner)} of {GetType()} {this}!");
-            Destruct();
+            Destroy(this);
             return;
         }
-
-        Incorporate();
-    }
-
-    private void OnDestroy()
-    {
-        Excorporate();
     }
 }

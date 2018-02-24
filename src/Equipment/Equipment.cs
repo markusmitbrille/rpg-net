@@ -1,18 +1,19 @@
 ﻿using Autrage.LEX.NET;
 using Autrage.LEX.NET.Serialization;
+using System.Collections.ObjectModel;
 using UnityEngine;
 
 [DataContract]
-public sealed class Equipment : MonoBehaviour, IUnique<EquipmentInfo>, IDestructible
+public sealed class Equipment : MonoBehaviour
 {
     [SerializeField]
     [DataMember]
-    private EquipmentInfo id;
+    private EquipmentInfo info;
 
-    public EquipmentInfo ID => id;
+    public EquipmentInfo Info => info;
     public Actor Owner { get; private set; }
 
-    public bool Is(EquipmentCategory category) => id.Category.Is(category);
+    public bool Is(EquipmentCategory category) => info.Category.Is(category);
 
     public Equipment Equip(Actor actor)
     {
@@ -23,9 +24,9 @@ public sealed class Equipment : MonoBehaviour, IUnique<EquipmentInfo>, IDestruct
 
         Equipment equipment = Instantiate(this, actor.transform);
 
-        if (id.Equip != null)
+        if (info.Equip != null)
         {
-            Owner.SendSpell(null, null, Owner, id.Equip);
+            Owner.SendSpell(null, null, Owner, info.Equip);
         }
 
         return equipment;
@@ -38,15 +39,13 @@ public sealed class Equipment : MonoBehaviour, IUnique<EquipmentInfo>, IDestruct
             return;
         }
 
-        if (id.Unequip != null)
+        if (info.Unequip != null)
         {
-            Owner.SendSpell(null, null, Owner, id.Unequip);
+            Owner.SendSpell(null, null, Owner, info.Unequip);
         }
 
-        Destruct();
+        Destroy(this);
     }
-
-    public void Destruct() => Destroy(this);
 
     private void Start()
     {
@@ -64,5 +63,52 @@ public sealed class Equipment : MonoBehaviour, IUnique<EquipmentInfo>, IDestruct
     private void OnDestroy()
     {
         Owner.Equipments.Remove(this);
+    }
+
+    public class Collection : KeyedCollection<EquipmentInfo, Equipment>
+    {
+        public Collection() : base(new IdentityEqualityComparer<EquipmentInfo>())
+        {
+        }
+
+        protected override EquipmentInfo GetKeyForItem(Equipment item) => item.Info;
+
+        protected override void InsertItem(int index, Equipment item)
+        {
+            if (item == null)
+            {
+                return;
+            }
+            if (Contains(item))
+            {
+                Destroy(item);
+                return;
+            }
+
+            base.InsertItem(index, item);
+        }
+
+        protected override void SetItem(int index, Equipment item) => InsertItem(index, item);
+
+        protected override void RemoveItem(int index)
+        {
+            if (index >= Count)
+            {
+                return;
+            }
+
+            Destroy(this[index]);
+            base.RemoveItem(index);
+        }
+
+        protected override void ClearItems()
+        {
+            foreach (Equipment item in this)
+            {
+                Destroy(item);
+            }
+
+            base.ClearItems();
+        }
     }
 }

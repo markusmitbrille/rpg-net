@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 [DisallowMultipleComponent]
 [DataContract]
-public abstract class Actor : MonoBehaviour, IUnique<ActorInfo>
+public abstract class Actor : MonoBehaviour
 {
     [SerializeField]
     [DataMember]
@@ -13,12 +13,10 @@ public abstract class Actor : MonoBehaviour, IUnique<ActorInfo>
 
     public ActorInfo ID => id;
 
-    public TraitCollection<AuraInfo, Aura> Auras { get; private set; }
-    public TraitCollection<SkillInfo, Skill> Skills { get; private set; }
-    public TraitCollection<EquipmentInfo, Equipment> Equipments { get; private set; }
-    public TraitCollection<StatInfo, Stat> Stats { get; private set; }
-    public TraitCollection<StatInfo, ComplexStat> Complices { get; private set; }
-    public TraitCollection<StatInfo, Resource> Resources { get; private set; }
+    public Skill.Collection Skills { get; private set; }
+    public Equipment.Collection Equipments { get; private set; }
+    public ComplexStat.Collection Complices { get; private set; }
+    public Resource.Collection Resources { get; private set; }
 
     public abstract Actor Target { get; }
     public abstract Vector3 Aim { get; }
@@ -84,12 +82,10 @@ public abstract class Actor : MonoBehaviour, IUnique<ActorInfo>
 
     private void Awake()
     {
-        Auras = new TraitCollection<AuraInfo, Aura>();
-        Skills = new TraitCollection<SkillInfo, Skill>();
-        Equipments = new TraitCollection<EquipmentInfo, Equipment>();
-        Stats = new TraitCollection<StatInfo, Stat>();
-        Complices = new TraitCollection<StatInfo, ComplexStat>();
-        Resources = new TraitCollection<StatInfo, Resource>();
+        Skills = new Skill.Collection();
+        Equipments = new Equipment.Collection();
+        Complices = new ComplexStat.Collection();
+        Resources = new Resource.Collection();
     }
 
     private T ReceivePackage<T>(Package<T> package)

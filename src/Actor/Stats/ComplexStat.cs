@@ -1,6 +1,7 @@
 ﻿using Autrage.LEX.NET.Serialization;
 using UnityEngine;
 using System.Linq;
+using System.Collections.ObjectModel;
 
 #if UNITY_EDITOR
 
@@ -9,7 +10,7 @@ using UnityEditor;
 #endif
 
 [DataContract]
-public sealed class ComplexStat : Stat, IExtendable<ComplexStat>
+public sealed class ComplexStat : Stat
 {
     [SerializeField]
     [DataMember]
@@ -70,16 +71,60 @@ public sealed class ComplexStat : Stat, IExtendable<ComplexStat>
     private float MultVal => Multiplier ?? 1f;
     private float AddVal => Addend ?? 0f;
 
-    public void Extend(ComplexStat other)
+    private void Start() => Owner.Complices.Add(this);
+
+    private void OnDestroy() => Owner.Complices.Remove(this);
+
+    public class Collection : KeyedCollection<StatInfo, ComplexStat>
     {
-        basis.Add(other.basis.ToArray());
-        multiplier.Add(other.multiplier.ToArray());
-        addend.Add(other.addend.ToArray());
+        public Collection() : base(new IdentityEqualityComparer<StatInfo>())
+        {
+        }
+
+        protected override StatInfo GetKeyForItem(ComplexStat item) => item.Info;
+
+        protected override void InsertItem(int index, ComplexStat item)
+        {
+            if (item == null)
+            {
+                return;
+            }
+            if (Contains(item))
+            {
+                ComplexStat original = this[item.Info];
+                original.basis.Add(item.basis.ToArray());
+                original.multiplier.Add(item.multiplier.ToArray());
+                original.addend.Add(item.addend.ToArray());
+                Destroy(item);
+                return;
+            }
+
+            base.InsertItem(index, item);
+        }
+
+        protected override void SetItem(int index, ComplexStat item) => InsertItem(index, item);
+
+        protected override void RemoveItem(int index)
+        {
+            if (index >= Count)
+            {
+                return;
+            }
+
+            Destroy(this[index]);
+            base.RemoveItem(index);
+        }
+
+        protected override void ClearItems()
+        {
+            foreach (ComplexStat item in this)
+            {
+                Destroy(item);
+            }
+
+            base.ClearItems();
+        }
     }
-
-    protected override void Incorporate() => Owner.Complices.Add(this);
-
-    protected override void Excorporate() => Owner.Complices.Remove(this);
 
 #if UNITY_EDITOR
 

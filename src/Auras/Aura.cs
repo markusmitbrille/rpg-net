@@ -7,7 +7,7 @@ using static Autrage.LEX.NET.Bugger;
 
 [DisallowMultipleComponent]
 [DataContract]
-public sealed class Aura : MonoBehaviour, IUnique<AuraInfo>, IExtendable<Aura>, IDestructible
+public sealed class Aura : MonoBehaviour
 {
     private const string DescriptionSeperator = "---";
 
@@ -77,22 +77,9 @@ public sealed class Aura : MonoBehaviour, IUnique<AuraInfo>, IExtendable<Aura>, 
             Destroy(this);
             return;
         }
-
-        Owner.Auras.Add(this);
     }
 
     private void OnDestroy()
     {
-        Owner.Auras.Remove(this);
-    }
-
-    public void Extend(Aura other)
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public void Destruct()
-    {
-        throw new System.NotImplementedException();
     }
 }

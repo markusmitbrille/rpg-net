@@ -4,17 +4,16 @@ using System;
 using UnityEngine;
 
 [DataContract]
-public abstract class Effect : MonoBehaviour, IDestructible
+public abstract class Effect<T> : MonoBehaviour
+    where T : EffectInfo
 {
     [SerializeField]
     [DataMember]
-    private EffectInfo id;
+    private T id;
 
-    public EffectInfo ID => id;
+    public T ID => id;
     public Aura Aura { get; private set; }
     public Actor Owner { get; private set; }
-
-    public void Destruct() => Destroy(this);
 
     private void Start()
     {
@@ -22,7 +21,7 @@ public abstract class Effect : MonoBehaviour, IDestructible
         if (Aura == null)
         {
             Bugger.Error($"Could not get {nameof(Aura)} of {GetType()} {this}!");
-            Destruct();
+            Destroy(this);
             return;
         }
 
@@ -30,7 +29,7 @@ public abstract class Effect : MonoBehaviour, IDestructible
         if (Owner == null)
         {
             Bugger.Error($"Could not get {nameof(Owner)} of {GetType()} {this}!");
-            Destruct();
+            Destroy(this);
             return;
         }
     }
