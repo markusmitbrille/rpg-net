@@ -18,6 +18,9 @@ public sealed class Aura : MonoBehaviour
     [DataMember]
     private Aura source;
 
+    [DataMember]
+    public bool Abort { get; set; }
+
     public AuraInfo Info => info;
     public Skill Origin => origin;
     public Aura Source => source;
@@ -87,6 +90,14 @@ public sealed class Aura : MonoBehaviour
 
     private void Update()
     {
+        if (Abort)
+        {
+            Conductors.ForEach(conductor => conductor.ConductAbortion());
+            Conductors.ForEach(conductor => conductor.ConductConclusion());
+            Destroy(gameObject);
+            return;
+        }
+
         if (Inhibitors.All(inhibitor => inhibitor.AllowUpdate))
         {
             Conductors.ForEach(conductor => conductor.ConductUpdate());
